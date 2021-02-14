@@ -1,0 +1,10 @@
+--- a/Makefile
++++ b/Makefile
+@@ -7,7 +7,6 @@ PREFIX = $(DESTDIR)/usr
+ CFLAGS = -g -O2 -Wall $(EXTRA_CFLAGS)
+ # For ARM:
+ # CFLAGS =  -Wall $(EXTRA_CFLAGS)
+-LDFLAGS = 
+ OBJS = parprouted.o arp.o
+ 
+ LIBS = -lpthread

@@ -1,0 +1,19 @@
+Source: parprouted
+Section: net
+Priority: optional
+Maintainer: Luciano Bello <luciano@debian.org>
+Build-Depends: debhelper (>=9)
+Standards-Version: 4.0.0
+Homepage: http://www.hazard.maks.net/parprouted/
+Vcs-Git: git://anonscm.debian.org/collab-maint/parprouted.git
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/parprouted.git
+
+Package: parprouted
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: transparent IP (Layer 3) proxy ARP bridging tool
+ This is useful for creation of transparent firewalls and bridging
+ networks with different MAC protocols. Also, unlike standard
+ bridging, proxy ARP bridging allows one to bridge Ethernet networks
+ behind wireless nodes without using WDS or layer 2 bridging.
+

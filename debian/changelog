@@ -1,0 +1,39 @@
+parprouted (0.70-3) unstable; urgency=medium
+
+  * Standards-Version updated.
+  * Always cast to 32 bits. (LP: #1668339)
+
+ -- Luciano Bello <luciano@debian.org>  Mon, 24 Jul 2017 21:51:12 -0400
+
+parprouted (0.70-2) unstable; urgency=high
+
+  * Migrated to debhelper 9 (Closes: #817614)
+  * Standards-Version updated.
+  * debian/rules refactored.
+  * Spelling mistake in the description.
+  * DESTDIR-in-Makefile.patch: honors DESTDIR 
+  * LDFLAGS-in-Makefile.patch: honors LDFLAGS
+  * Watch file added.
+
+ -- Luciano Bello <luciano@debian.org>  Tue, 21 Jun 2016 23:07:27 +0200
+
+parprouted (0.70-1) unstable; urgency=low
+
+  * New upstream version (Closes:#470399)
+  * Standards-Version updated.
+  * The option nostrip is observed by removing -s (Closes:#437738)
+
+ -- Luciano Bello <luciano@debian.org>  Wed, 16 Jul 2008 18:11:26 -0300
+
+parprouted (0.63-2) unstable; urgency=low
+
+  * New mainteiner (Closes:#387237).
+
+ -- Luciano Bello <luciano@linux.org.ar>  Fri,  8 Dec 2006 17:36:58 -0300
+ 
+parprouted (0.63-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- David Moreno Garza <damog@debian.org>  Mon,  1 May 2006 20:45:46 -0500
+
