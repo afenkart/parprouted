@@ -71,7 +71,7 @@ int arp_recv(int sock, ether_arp_frame *frame) {
 
   nread = recv(sock, &packet, sizeof(packet), 0);
 
-  if (nread > sizeof(ether_arp_frame)) {
+  if (nread > static_cast<int>(sizeof(ether_arp_frame))) {
     nread = sizeof(ether_arp_frame);
   }
 

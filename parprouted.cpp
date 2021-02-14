@@ -73,10 +73,8 @@ ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
 
 int findentry(struct in_addr ipaddr) {
   ARPTAB_ENTRY *cur_entry = *arptab;
-  ARPTAB_ENTRY *prev_entry = NULL;
 
   while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
-    prev_entry = cur_entry;
     cur_entry = cur_entry->next;
   };
 
@@ -218,7 +216,7 @@ void parseproc() {
   struct in_addr ipaddr;
   int incomplete = 0;
   int i;
-  char *ip, *mac, *dev, *hw, *flags, *mask;
+  char *ip, *mac, *dev;
 
   /* Parse /proc/net/arp table */
 
@@ -273,16 +271,16 @@ void parseproc() {
       }
 
       /* Hardware type */
-      hw = strtok(NULL, " ");
+      strtok(NULL, " ");
 
       /* flags */
-      flags = strtok(NULL, " ");
+      strtok(NULL, " ");
 
       /* MAC address */
       mac = strtok(NULL, " ");
 
       /* Mask */
-      mask = strtok(NULL, " ");
+      strtok(NULL, " ");
 
       /* Device */
       dev = strtok(NULL, " ");
@@ -342,7 +340,7 @@ void parseproc() {
   }
 }
 
-void cleanup() {
+void cleanup(void*) {
   /* FIXME: I think this is a wrong way to do it ... */
 
   syslog(LOG_INFO, "Received signal; cleaning up.");
@@ -357,12 +355,12 @@ void cleanup() {
   exit(1);
 }
 
-void sighandler() {
+void sighandler(int) {
   /* FIXME: I think this is a wrong way to do it ... */
   perform_shutdown = 1;
 }
 
-void *main_thread() {
+void *main_thread(void*) {
   time_t last_refresh;
 
   signal(SIGINT, sighandler);
@@ -475,7 +473,7 @@ int main(int argc, char **argv) {
   }
 
   for (i = 0; i <= last_iface_idx; i++) {
-    if (pthread_create(&my_threads[++last_thread_idx], NULL, (void *)arp,
+    if (pthread_create(&my_threads[++last_thread_idx], NULL, reinterpret_cast<void *(*)(void*)>(arp),
                        (void *)ifaces[i])) {
       syslog(LOG_ERR, "Error creating ARP thread for %s.", ifaces[i]);
       abort();
