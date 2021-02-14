@@ -1,4 +1,4 @@
-/* parprouted: ProxyARP routing daemon. 
+/* parprouted: ProxyARP routing daemon.
  * (C) 2008 Vladimir Ivaschenko <vi@maks.net>
  *
  * This application is free software; you can redistribute it and/or
@@ -23,41 +23,39 @@
 #define ARP_TABLE_ENTRY_TIMEOUT 60 /* seconds */
 #define ROUTE_CMD_LEN 255
 #define SLEEPTIME 1000000 /* ms */
-#define REFRESHTIME 50 /* seconds */
+#define REFRESHTIME 50    /* seconds */
 #define MAX_IFACES 10
 
-#define MAX_RQ_SIZE 50	/* maximum size of request queue */
+#define MAX_RQ_SIZE 50 /* maximum size of request queue */
 
 #define VERSION "0.7"
 
+#include <arpa/inet.h>
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <syslog.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <assert.h>
 #include <libgen.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <syslog.h>
+#include <time.h>
 #include <unistd.h>
 
 typedef struct arptab_entry {
-    struct in_addr ipaddr_ia;
-    char hwaddr[ARP_TABLE_ENTRY_LEN];
-    char ifname[ARP_TABLE_ENTRY_LEN];
-    time_t tstamp;
-    int route_added;
-    int incomplete;
-    int want_route;
-    struct arptab_entry *next;
+  struct in_addr ipaddr_ia;
+  char hwaddr[ARP_TABLE_ENTRY_LEN];
+  char ifname[ARP_TABLE_ENTRY_LEN];
+  time_t tstamp;
+  int route_added;
+  int incomplete;
+  int want_route;
+  struct arptab_entry *next;
 } ARPTAB_ENTRY;
 
 extern int debug;
@@ -69,7 +67,7 @@ extern ARPTAB_ENTRY **arptab;
 extern pthread_mutex_t arptab_mutex;
 extern pthread_mutex_t req_queue_mutex;
 
-extern char * ifaces[MAX_IFACES];
+extern char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
 extern void *arp(char *ifname);
