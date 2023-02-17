@@ -1,5 +1,6 @@
 /* parprouted: ProxyARP routing daemon.
  * (C) 2008 Vladimir Ivaschenko <vi@maks.net>
+ * (C) 2023 Andreas Fenkart <afenkart@gmail.com>
  *
  * This application is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
