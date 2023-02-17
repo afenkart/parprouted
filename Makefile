@@ -5,7 +5,7 @@ PREFIX = $(DESTDIR)/usr
 #CC = gcc
 
 CFLAGS = -g -O2 -Wall $(EXTRA_CFLAGS)
-CXXFLAGS = -g -O2 -std=c++17 -Wall $(EXTRA_CFLAGS)
+CXXFLAGS = -g -O2 -std=c++20 -Wall $(EXTRA_CFLAGS)
 # For ARM:
 # CFLAGS =  -Wall $(EXTRA_CFLAGS)
 OBJS = parprouted.o arp.o
