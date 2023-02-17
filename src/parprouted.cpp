@@ -21,6 +21,7 @@
 
 #include "parprouted.h"
 
+#include <algorithm>
 #include <vector>
 
 char *progname;
@@ -37,51 +38,37 @@ int last_thread_idx = -1;
 char *ifaces[MAX_IFACES];
 int last_iface_idx = -1;
 
-ARPTAB_ENTRY **arptab;
+std::vector<arptab_entry> arptab;
 pthread_mutex_t arptab_mutex;
 
 ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
-  ARPTAB_ENTRY *cur_entry = *arptab;
-  ARPTAB_ENTRY *prev_entry = NULL;
 
-  while (cur_entry != NULL &&
-         (ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr ||
-          (strncmp(cur_entry->ifname, dev, strlen(dev)) != 0))) {
-    prev_entry = cur_entry;
-    cur_entry = cur_entry->next;
-  };
+  auto it = std::find_if(std::begin(arptab), std::end(arptab),
+                         [&ipaddr, dev](auto &elt) {
+                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
+                                  strncmp(elt.ifname, dev, strlen(dev)) == 0;
+                         });
 
-  if (cur_entry == NULL) {
-    if (debug)
-      printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
-
-    if ((cur_entry = (ARPTAB_ENTRY *)malloc(sizeof(ARPTAB_ENTRY))) == NULL) {
-      errstr = strerror(errno);
-      syslog(LOG_INFO, "No memory: %s", errstr);
-    } else {
-      if (prev_entry == NULL) {
-        *arptab = cur_entry;
-      } else {
-        prev_entry->next = cur_entry;
-      }
-      cur_entry->next = NULL;
-      cur_entry->ifname[0] = '\0';
-      cur_entry->route_added = 0;
-      cur_entry->want_route = 1;
-    }
+  if (it != std::cend(arptab)) {
+    return &*it;
   }
 
-  return cur_entry;
+  if (debug)
+    printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
+
+  arptab.push_back({.want_route = 1});
+
+  return &arptab.back();
 }
 
 int findentry(struct in_addr ipaddr) {
-  ARPTAB_ENTRY *cur_entry = *arptab;
 
-  while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
-    cur_entry = cur_entry->next;
-  };
+  auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
+                         [&ipaddr](const auto &elt) -> bool {
+                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
+                         });
 
-  if (cur_entry == NULL)
+  if (it == std::cend(arptab))
     return 0;
   else
     return 1;
@@ -89,18 +76,21 @@ int findentry(struct in_addr ipaddr) {
 
 /* Remove all entires in arptab where ipaddr is NOT on interface dev */
 int remove_other_routes(struct in_addr ipaddr, const char *dev) {
-  ARPTAB_ENTRY *cur_entry;
   int removed = 0;
 
-  for (cur_entry = *arptab; cur_entry != NULL; cur_entry = cur_entry->next) {
-    if (ipaddr.s_addr == cur_entry->ipaddr_ia.s_addr &&
-        strcmp(dev, cur_entry->ifname) != 0) {
-      if (debug && cur_entry->want_route)
-        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
-               cur_entry->ifname);
-      cur_entry->want_route = 0;
-      ++removed;
+  auto it = std::find_if(std::begin(arptab), std::end(arptab),
+                         [&ipaddr, dev](auto &elt) {
+                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
+                                  strcmp(dev, elt.ifname) != 0;
+                         });
+
+  if (it != std::cend(arptab)) {
+    if (debug && it->want_route) {
+      printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
+             it->ifname);
     }
+    it->want_route = 0;
+    ++removed;
   }
   return removed;
 }
@@ -163,52 +153,34 @@ int route_add(ARPTAB_ENTRY *cur_entry) {
 }
 
 void processarp(int in_cleanup) {
-  ARPTAB_ENTRY *cur_entry = *arptab, *prev_entry = NULL;
+  std::vector<arptab_entry> expiredEntries{};
 
-  /* First loop to remove unwanted routes */
-  while (cur_entry != NULL) {
-    if (debug && verbose)
-      printf("Working on route %s(%s) tstamp %u want_route %d\n",
-             inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname,
-             (int)cur_entry->tstamp, cur_entry->want_route);
+  auto expired = [in_cleanup](const arptab_entry &it) {
+    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
+           in_cleanup;
+  };
 
-    if (!cur_entry->want_route ||
-        time(NULL) - cur_entry->tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
-        in_cleanup) {
+  std::copy_if(std::cbegin(arptab), std::cend(arptab),
+               std::back_inserter(expiredEntries), expired);
 
-      if (cur_entry->route_added)
-        route_remove(cur_entry);
+  for (auto &it : expiredEntries) {
+    if (it.route_added)
+      route_remove(&it);
 
-      /* remove from arp list */
-      if (debug)
-        printf("Delete arp %s(%s)\n", inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname);
+    /* remove from arp list */
+    if (debug)
+      printf("Delete arp %s(%s)\n", inet_ntoa(it.ipaddr_ia), it.ifname);
+  }
 
-      if (prev_entry != NULL) {
-        prev_entry->next = cur_entry->next;
-        free(cur_entry);
-        cur_entry = prev_entry->next;
-      } else {
-        *arptab = cur_entry->next;
-        free(cur_entry);
-        cur_entry = *arptab;
-      }
-    } else {
-      prev_entry = cur_entry;
-      cur_entry = cur_entry->next;
-    }
-  } /* while loop */
+  arptab.erase(std::remove_if(std::begin(arptab), std::end(arptab), expired),
+               arptab.end());
 
   /* Now loop to add new routes */
-  cur_entry = *arptab;
-  while (cur_entry != NULL) {
-    if (time(NULL) - cur_entry->tstamp <= ARP_TABLE_ENTRY_TIMEOUT &&
-        cur_entry->want_route && !cur_entry->route_added && !in_cleanup) {
-      /* add route to the kernel */
-      route_add(cur_entry);
+  for (auto &elt : arptab) {
+    if (!expired(elt)) {
+      route_add(&elt);
     }
-    cur_entry = cur_entry->next;
-  } /* while loop */
+  }
 }
 
 void parseproc() {
@@ -385,7 +357,7 @@ void *main_thread(void*) {
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {
       pthread_mutex_lock(&arptab_mutex);
-      refresharp(*arptab);
+      refresharp(arptab);
       pthread_mutex_unlock(&arptab_mutex);
       time(&last_refresh);
     }
@@ -459,13 +431,6 @@ int main(int argc, char **argv) {
   signal(SIGINT, sighandler);
   signal(SIGTERM, sighandler);
   signal(SIGHUP, sighandler);
-
-  if ((arptab = (ARPTAB_ENTRY **)malloc(sizeof(ARPTAB_ENTRY **))) == NULL) {
-    errstr = strerror(errno);
-    syslog(LOG_INFO, "No memory: %s", errstr);
-  }
-
-  *arptab = NULL;
 
   pthread_mutex_init(&arptab_mutex, NULL);
   pthread_mutex_init(&req_queue_mutex, NULL);

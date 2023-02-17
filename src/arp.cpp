@@ -202,13 +202,12 @@ void arp_req(char *ifname, struct in_addr remaddr, int gratuitous) {
 
 /* ARP ping all entries in the table */
 
-void refresharp(ARPTAB_ENTRY *list) {
+void refresharp(std::vector<arptab_entry> &arptable) {
   if (debug)
     printf("Refreshing ARP entries.\n");
 
-  while (list != NULL) {
-    arp_req(list->ifname, list->ipaddr_ia, 0);
-    list = list->next;
+  for (auto &entry : arptable) {
+    arp_req(entry.ifname, entry.ipaddr_ia, 0);
   }
 }
 
