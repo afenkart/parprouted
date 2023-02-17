@@ -25,6 +25,8 @@
 #include <netinet/if_ether.h>
 #include <sys/ioctl.h>
 
+#include <algorithm>
+
 #include "parprouted.h"
 
 typedef struct _ether_arp_frame {
@@ -45,19 +47,26 @@ pthread_mutex_t req_queue_mutex;
 
 /* Check if the IP address exists in the arptab */
 
-int ipaddr_known(ARPTAB_ENTRY *list, struct in_addr addr, char *ifname) {
-  while (list != NULL) {
-    /* If we have this address in the table and ARP request comes from a
-       different interface, then we can reply */
-    if (addr.s_addr == list->ipaddr_ia.s_addr && strcmp(ifname, list->ifname) &&
-        list->incomplete == 0) {
-      return 1;
-    }
-    list = list->next;
-  }
+int ipaddr_known(std::vector<arptab_entry> arptable, struct in_addr addr,
+                 char *ifname) {
 
-  if (debug)
+  auto it =
+      std::find_if(std::cbegin(arptable), std::cend(arptable),
+                   [&ipaddr = addr, ifname](auto &elt) {
+                     /* If we have this address in the table and ARP request
+                        comes from a different interface, then we can reply */
+                     return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
+                            strncmp(elt.ifname, ifname, strlen(ifname)) != 0 &&
+                            elt.incomplete == 0;
+                   });
+
+  if (it != std::cend(arptable)) {
+    return 1;
+  };
+
+  if (debug) {
     printf("Did not find match for %s(%s)\n", inet_ntoa(addr), ifname);
+  }
 
   return 0;
 }

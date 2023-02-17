@@ -58,7 +58,6 @@ typedef struct arptab_entry {
   int route_added;
   int incomplete;
   int want_route;
-  struct arptab_entry *next;
 } ARPTAB_ENTRY;
 
 extern int debug;
