@@ -21,6 +21,8 @@
 
 #include "parprouted.h"
 
+#include <vector>
+
 char *progname;
 int debug = 0;
 int verbose = 0;
