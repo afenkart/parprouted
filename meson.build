@@ -1,3 +1,3 @@
 
 project('parprouted', 'cpp')
-executable('parprouted', 'parprouted.cpp', 'arp.cpp')
+executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp')
