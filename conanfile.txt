@@ -2,3 +2,7 @@
 gsl-lite/0.40.0
 catch2/3.3.1
 trompeloeil/43
+
+[generators]
+PkgConfigDeps
+MesonToolchain
