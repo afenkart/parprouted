@@ -25,3 +25,14 @@ if pod2man.found()
   )
 endif
 
+catch2 = dependency('catch2-with-main')
+trompeloeil = dependency('trompeloeil')
+
+e = executable('parprouted-test', 'src/parprouted-test.cpp',
+  dependencies : [
+    catch2,
+    trompeloeil,
+  ]
+)
+
+test('basic tests', e)
