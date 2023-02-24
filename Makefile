@@ -7,7 +7,7 @@ PREFIX = $(DESTDIR)/usr
 CFLAGS = -g -O2 -Wall $(EXTRA_CFLAGS)
 # For ARM:
 # CFLAGS =  -Wall $(EXTRA_CFLAGS)
-OBJS = parprouted.o arp.o
+OBJS = src/parprouted.o src/arp.o
 
 LIBS = -lpthread
 
