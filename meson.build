@@ -1,8 +1,8 @@
 
 project('parprouted', 'cpp')
-parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp')
+parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', cpp_pch : 'pch/parprouted_pch.h')
 
-pkg = import('pkgconfig')
+#pkg = import('pkgconfig')
 
 #catch2 = dependency('catch2')
 catch2 = dependency('catch2-with-main')

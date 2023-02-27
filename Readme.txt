@@ -8,7 +8,8 @@ https://docs.conan.io/2/examples/tools/meson/mesontoolchain/build_simple_meson_p
    ./meson-build/compressor
 
 meson setup --reconfigure --native-file native.ini build
-meson setup --reconfigure --native-file native.ini build
+meson setup --reconfigure -Db_coverage=true --native-file native.ini build
+
 
 
 https://roy.marples.name/projects/parpd/
