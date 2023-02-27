@@ -38,4 +38,6 @@ e = executable('parprouted-test', ['src/parprouted-test.cpp'],
   ]
 )
 
-test('basic tests', e)
+if get_option('unit-tests')
+  test('basic tests', e)
+endif

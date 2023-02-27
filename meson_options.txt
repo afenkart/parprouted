@@ -1,0 +1,4 @@
+
+option('foo', type : 'string', value : 'optval', description : 'an option') 
+option('unit-tests', type : 'boolean', value : 'true', description : 'an option2') 
+
