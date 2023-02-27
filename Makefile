@@ -9,7 +9,7 @@ CXXFLAGS = -g -O2 -std=c++17 -Wall $(EXTRA_CFLAGS)
 
 # For ARM:
 # CFLAGS =  -Wall $(EXTRA_CFLAGS)
-OBJS = src/parprouted.o src/arp.o
+OBJS = src/parprouted.o src/arp.o src/main.o
 
 LIBS = -lpthread
 
@@ -28,6 +28,4 @@ parprouted:	${OBJS}
 parprouted.8:	parprouted.pod
 	pod2man --section=8 --center="Proxy ARP Bridging Daemon" parprouted.pod --release "parprouted" --date "`date '+%B %Y'`" > parprouted.8
 
-parprouted.o : parprouted.cpp parprouted.h
-
-arp.o : arp.cpp parprouted.h
+%.o : %.cpp parprouted.h

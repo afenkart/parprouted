@@ -76,3 +76,6 @@ extern void arp_req(char *ifname, struct in_addr remaddr, int gratuitous);
 
 extern void parseproc();
 extern void processarp(int cleanup);
+
+extern void sighandler(int);
+void *main_thread(void *);
