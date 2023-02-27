@@ -1,5 +1,5 @@
 project('parprouted', 'cpp')
-executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', install: true)
+parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', install: true)
 
 pod2man = find_program('pod2man')
 if pod2man.found()
@@ -28,7 +28,10 @@ endif
 catch2 = dependency('catch2-with-main')
 trompeloeil = dependency('trompeloeil')
 
-e = executable('parprouted-test', 'src/parprouted-test.cpp',
+objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
+
+e = executable('parprouted-test', ['src/parprouted-test.cpp'],
+  objects : objs,
   dependencies : [
     catch2,
     trompeloeil,
