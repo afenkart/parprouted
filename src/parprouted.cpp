@@ -24,6 +24,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "fs.h"
+
 int debug = 0;
 int verbose = 0;
 int option_arpperm = 0;
@@ -180,6 +182,8 @@ void processarp(int in_cleanup) {
 }
 
 void parseproc() {
+  auto fileSystem = makeFileSystem();
+
   FILE *arpf;
   int firstline;
   ARPTAB_ENTRY *entry;
@@ -200,7 +204,7 @@ void parseproc() {
 
   while (!feof(arpf)) {
 
-    if (fgets(line, ARP_LINE_LEN, arpf) == NULL) {
+    if (fileSystem->fgets(line, ARP_LINE_LEN, arpf) == NULL) {
       if (!ferror(arpf))
         break;
       else {

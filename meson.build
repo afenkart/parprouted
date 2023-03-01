@@ -4,7 +4,7 @@ project('parprouted', 'cpp')
 
 parprouted = executable(
   'parprouted',
-   [ 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp' ],
+   [ 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', 'src/fs.cpp' ],
   install: true,
   install_dir: 'sbin',
 )
