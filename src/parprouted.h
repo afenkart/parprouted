@@ -71,12 +71,16 @@ extern pthread_mutex_t req_queue_mutex;
 extern char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
-extern void *arp(char *ifname);
+struct FileSystem;
+
+extern void *arp(char *ifname, FileSystem &);
 extern void refresharp(std::vector<arptab_entry> &);
 extern void arp_req(char *ifname, struct in_addr remaddr, int gratuitous);
 
-extern void parseproc();
+extern void parseproc(FileSystem &);
 extern void processarp(int cleanup);
 
-extern void sighandler(int);
-void *main_thread(void *);
+extern std::vector<arptab_entry> arptab;
+
+// extern void sighandler(int);
+// void *main_thread(void *);

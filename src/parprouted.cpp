@@ -29,7 +29,6 @@
 int debug = 0;
 int verbose = 0;
 int option_arpperm = 0;
-static int perform_shutdown = 0;
 
 char *errstr;
 
@@ -181,9 +180,7 @@ void processarp(int in_cleanup) {
   }
 }
 
-void parseproc() {
-  auto fileSystem = makeFileSystem();
-
+void parseproc(FileSystem &fileSystem) {
   FILE *arpf;
   int firstline;
   ARPTAB_ENTRY *entry;
@@ -204,7 +201,7 @@ void parseproc() {
 
   while (!feof(arpf)) {
 
-    if (fileSystem->fgets(line, ARP_LINE_LEN, arpf) == NULL) {
+    if (fileSystem.fgets(line, ARP_LINE_LEN, arpf) == NULL) {
       if (!ferror(arpf))
         break;
       else {
@@ -313,55 +310,4 @@ void parseproc() {
     errstr = strerror(errno);
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
-}
-
-void cleanup(void *) {
-  /* FIXME: I think this is a wrong way to do it ... */
-
-  syslog(LOG_INFO, "Received signal; cleaning up.");
-  /*
-  for (i=0; i <= last_thread_idx; i++) {
-      pthread_cancel(my_threads[i]);
-  }
-  */
-  pthread_mutex_trylock(&arptab_mutex);
-  processarp(1);
-  syslog(LOG_INFO, "Terminating.");
-  exit(1);
-}
-
-void sighandler(int) {
-  /* FIXME: I think this is a wrong way to do it ... */
-  perform_shutdown = 1;
-}
-
-void *main_thread(void *) {
-  time_t last_refresh;
-
-  signal(SIGINT, sighandler);
-  signal(SIGTERM, sighandler);
-  signal(SIGHUP, sighandler);
-
-  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  pthread_cleanup_push(cleanup, NULL);
-  while (1) {
-    if (perform_shutdown) {
-      pthread_exit(0);
-    }
-    pthread_testcancel();
-    pthread_mutex_lock(&arptab_mutex);
-    parseproc();
-    processarp(0);
-    pthread_mutex_unlock(&arptab_mutex);
-    usleep(SLEEPTIME);
-    if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {
-      pthread_mutex_lock(&arptab_mutex);
-      refresharp(arptab);
-      pthread_mutex_unlock(&arptab_mutex);
-      time(&last_refresh);
-    }
-  }
-  /* required since pthread_cleanup_* are implemented as macros */
-  pthread_cleanup_pop(0);
 }
