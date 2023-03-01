@@ -202,7 +202,7 @@ void parseproc(FileSystem &fileSystem) {
   while (!fileSystem.feof(arpf)) {
 
     if (fileSystem.fgets(line, ARP_LINE_LEN, arpf) == NULL) {
-      if (!ferror(arpf))
+      if (!fileSystem.ferror(arpf))
         break;
       else {
         errstr = strerror(errno);

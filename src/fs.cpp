@@ -25,6 +25,7 @@ class FileSystemImpl : public FileSystem {
     return ::fopen(pathname, mode);
   }
   int feof(FILE *stream) override { return feof(stream); }
+  int ferror(FILE *stream) override { return ferror(stream); }
   char *fgets(char s[], int size, FILE *stream) override {
     return ::fgets(s, size, stream);
   }
