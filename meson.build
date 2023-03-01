@@ -1,5 +1,11 @@
 project('parprouted', 'cpp')
-parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', install: true)
+
+parprouted = executable(
+  'parprouted',
+   [ 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp' ],
+  install: true,
+  install_dir: 'sbin',
+)
 
 pod2man = find_program('pod2man')
 if pod2man.found()
