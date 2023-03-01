@@ -25,19 +25,17 @@ if pod2man.found()
   )
 endif
 
-catch2 = dependency('catch2-with-main')
-trompeloeil = dependency('trompeloeil')
+if get_option('unit-tests').enabled()
+  catch2 = dependency('catch2-with-main')
+  trompeloeil = dependency('trompeloeil')
 
-objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
-
-e = executable('parprouted-test', ['src/parprouted-test.cpp'],
-  objects : objs,
-  dependencies : [
-    catch2,
-    trompeloeil,
-  ]
-)
-
-if get_option('unit-tests')
+  objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
+  e = executable('parprouted-test', ['src/parprouted-test.cpp'],
+    objects : objs,
+    dependencies : [
+      catch2,
+      trompeloeil,
+    ]
+  )
   test('basic tests', e)
 endif
