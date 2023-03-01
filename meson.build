@@ -1,5 +1,5 @@
 project('parprouted', 'cpp')
-parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', cpp_pch : 'pch/parprouted_pch.h')
+parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', cpp_pch : 'pch/parprouted_pch.h', install: true)
 
 #pkg = import('pkgconfig')
 
