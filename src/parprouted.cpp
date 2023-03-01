@@ -22,6 +22,7 @@
 #include "parprouted.h"
 
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 #include "fs.h"
@@ -306,7 +307,7 @@ void parseproc(FileSystem &fileSystem) {
     }
   }
 
-  if (fclose(arpf)) {
+  if (fileSystem.fclose(arpf)) {
     errstr = strerror(errno);
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
