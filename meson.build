@@ -3,15 +3,11 @@ parprouted=executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp', 'src/ma
 
 #pkg = import('pkgconfig')
 
-#catch2 = dependency('catch2')
-zlib = dependency('zlib')
-
-objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
-
 if get_option('unit-tests').enabled()
-
   catch2 = dependency('catch2-with-main')
   trompeloeil = dependency('trompeloeil')
+
+  objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
 
   e = executable('parprouted-test', ['src/parprouted-test.cpp'],
     objects : objs,
