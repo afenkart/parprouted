@@ -13,14 +13,14 @@ OBJS = src/parprouted.o src/arp.o
 
 LIBS = -lpthread
 
-all: parprouted
+all: parprouted parprouted.8
 
 install: all
 	install parprouted $(PREFIX)/sbin
 	install parprouted.8 $(PREFIX)/share/man/man8
 
 clean:
-	rm -f $(OBJS) parprouted core
+	rm -f $(OBJS) parprouted core parprouted.8
 
 parprouted:	${OBJS}
 	${CXX} -g -o parprouted ${OBJS} ${CXXFLAGS} ${LDFLAGS} ${LIBS}
