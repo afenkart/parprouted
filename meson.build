@@ -1,40 +1,40 @@
 project('parprouted', 'cpp')
 
+#pkg = import('pkgconfig')
+
 parprouted = executable(
   'parprouted',
-  'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp',
+   [ 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp' ],
   install: true,
   install_dir: 'sbin',
 )
 
 pod2man = find_program('pod2man')
+if pod2man.found()
+  # strip locale -> Maerz
+  date_cmd = run_command('date', '+%B %Y', check: true)
 
-pod2man_opts = [
-	'--section', '8',
-  '--center', 'Proxy ARP Bridging Daemon',
-  '--release', 'parprouted',
-  '--date', '`date \'+%B %Y\'`',
-]
-parprouted_man = custom_target(
-  'parprouted.8',
-  input: 'parprouted.pod',
-  output: 'parprouted.8',
-  command: [
-    pod2man, pod2man_opts, '@INPUT@', '@OUTPUT@',
-  ],
-  install: true,
-  install_dir: 'man/man8'
-)
-
-#install_man('parprouted.8')
-
-#pkg = import('pkgconfig')
+  pod2man_opts = [
+    '--section', '8',
+    '--center', 'Proxy ARP Bridging Daemon',
+    '--release', 'parprouted',
+    '--date', date_cmd.stdout().strip(),
+  ]
+  parprouted_man = custom_target(
+    'parprouted.8',
+    input: 'parprouted.pod',
+    output: 'parprouted.8',
+    command: [
+      pod2man, pod2man_opts, '@INPUT@', '@OUTPUT@',
+    ],
+    install: true,
+    install_dir: 'man/man8'
+  )
+endif
 
 if get_option('unit-tests').enabled()
   catch2 = dependency('catch2-with-main')
   trompeloeil = dependency('trompeloeil')
-
-  # catch2.install() = false
 
   objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
 
