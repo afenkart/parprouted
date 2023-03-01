@@ -21,6 +21,10 @@
 namespace {
 
 class FileSystemImpl : public FileSystem {
+  FILE *fopen(const char *pathname, const char *mode) override {
+    return ::fopen(pathname, mode);
+  }
+  int feof(FILE *stream) override { return feof(stream); }
   char *fgets(char s[], int size, FILE *stream) override {
     return ::fgets(s, size, stream);
   }

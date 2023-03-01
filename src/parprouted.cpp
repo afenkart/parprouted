@@ -192,14 +192,14 @@ void parseproc(FileSystem &fileSystem) {
 
   /* Parse /proc/net/arp table */
 
-  if ((arpf = fopen(PROC_ARP, "r")) == NULL) {
+  if ((arpf = fileSystem.fopen(PROC_ARP, "r")) == NULL) {
     errstr = strerror(errno);
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
 
   firstline = 1;
 
-  while (!feof(arpf)) {
+  while (!fileSystem.feof(arpf)) {
 
     if (fileSystem.fgets(line, ARP_LINE_LEN, arpf) == NULL) {
       if (!ferror(arpf))

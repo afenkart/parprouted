@@ -20,6 +20,8 @@
 #include <memory>
 
 struct FileSystem {
+  virtual FILE *fopen(const char *pathname, const char *mode) = 0;
+  virtual int feof(FILE *) = 0;
   virtual char *fgets(char s[], int size, FILE *stream) = 0;
 };
 
