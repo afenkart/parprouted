@@ -311,7 +311,7 @@ void parseproc() {
   }
 }
 
-void cleanup(void*) {
+void cleanup(void *) {
   /* FIXME: I think this is a wrong way to do it ... */
 
   syslog(LOG_INFO, "Received signal; cleaning up.");
@@ -331,7 +331,7 @@ void sighandler(int) {
   perform_shutdown = 1;
 }
 
-void *main_thread(void*) {
+void *main_thread(void *) {
   time_t last_refresh;
 
   signal(SIGINT, sighandler);

@@ -7,9 +7,7 @@ namespace {
 constexpr const char *TAGS = "foo";
 
 TEST_CASE("parprouted-test", TAGS) {
-  SECTION("parseproc") {
-    parseproc();
-  }
+  SECTION("parseproc") { parseproc(); }
 }
 
 } // namespace
