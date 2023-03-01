@@ -1,5 +1,7 @@
 #include "parprouted.h"
 
+#include "fs.h"
+
 #include <string>
 #include <thread>
 
@@ -78,10 +80,14 @@ int main(int argc, char **argv) {
   pthread_mutex_init(&arptab_mutex, NULL);
   pthread_mutex_init(&req_queue_mutex, NULL);
 
-  my_threads[++last_thread_idx] = std::thread(main_thread, nullptr);
+  auto fileSystem = makeFileSystem();
+
+  my_threads[++last_thread_idx] =
+      std::thread(main_thread, std::ref(*fileSystem));
 
   for (i = 0; i <= last_iface_idx; i++) {
-    my_threads[++last_thread_idx] = std::thread(arp, ifaces[i]);
+    my_threads[++last_thread_idx] =
+        std::thread(arp, ifaces[i], std::ref(*fileSystem));
     if (debug) {
       printf("Created ARP thread for %s.\n", ifaces[i]);
     }

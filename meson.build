@@ -2,7 +2,7 @@ project('parprouted', 'cpp', default_options: [ 'warning_level=3'], version: '0.
 
 add_global_arguments(['-Wuseless-cast'], language: 'cpp')
 
-cpp_files = files('src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp')
+cpp_files = files('src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp', 'src/fs.cpp')
 
 parprouted = executable(
   'parprouted',

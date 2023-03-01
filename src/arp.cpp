@@ -264,12 +264,12 @@ int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
   return 1;
 }
 
-void rq_process(struct in_addr ipaddr, int ifindex) {
+void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem) {
   RQ_ENTRY *cur_entry;
   RQ_ENTRY *prev_entry = NULL;
 
   pthread_mutex_lock(&arptab_mutex);
-  parseproc();
+  parseproc(fileSystem);
   processarp(0);
   pthread_mutex_unlock(&arptab_mutex);
 
@@ -316,7 +316,7 @@ void rq_process(struct in_addr ipaddr, int ifindex) {
   pthread_mutex_unlock(&req_queue_mutex);
 }
 
-void *arp(const char *ifname) {
+void *arp(const char *ifname, FileSystem &fileSystem) {
   int sock, i;
   struct sockaddr_ll ifs;
   struct ifreq ifr;
@@ -420,7 +420,7 @@ void *arp(const char *ifname) {
         close(arpsock);
 
         /* Check if reply is for one of the requests in request queue */
-        rq_process(sin->sin_addr, ifs.sll_ifindex);
+        rq_process(sin->sin_addr, ifs.sll_ifindex, fileSystem);
 
         /* send gratuitous arp request to all other interfaces to let them
          * update their ARP tables quickly */

@@ -20,6 +20,8 @@
 
 #include "parprouted.h"
 
+#include "fs.h"
+
 int debug = 0;
 int verbose = 0;
 int option_arpperm = 0;
@@ -213,7 +215,7 @@ void processarp(int in_cleanup) {
   } /* while loop */
 }
 
-void parseproc() {
+void parseproc(FileSystem &fileSystem) {
   FILE *arpf;
   int firstline;
   arptab_entry *entry;
@@ -225,17 +227,17 @@ void parseproc() {
 
   /* Parse /proc/net/arp table */
 
-  if ((arpf = fopen(PROC_ARP, "r")) == NULL) {
+  if ((arpf = fileSystem.fopen(PROC_ARP, "r")) == NULL) {
     errstr = strerror(errno);
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
 
   firstline = 1;
 
-  while (!feof(arpf)) {
+  while (!fileSystem.feof(arpf)) {
 
-    if (fgets(line, ARP_LINE_LEN, arpf) == NULL) {
-      if (!ferror(arpf)) {
+    if (fileSystem.fgets(line, ARP_LINE_LEN, arpf) == NULL) {
+      if (!fileSystem.ferror(arpf)) {
         break;
       } else {
         errstr = strerror(errno);
@@ -351,7 +353,7 @@ void parseproc() {
     }
   }
 
-  if (fclose(arpf)) {
+  if (fileSystem.fclose(arpf)) {
     errstr = strerror(errno);
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
@@ -377,7 +379,7 @@ void sighandler(int /* unused */) {
   perform_shutdown = 1;
 }
 
-void *main_thread(void *) {
+void *main_thread(FileSystem &fileSystem) {
   time_t last_refresh{};
 
   signal(SIGINT, sighandler);
@@ -393,7 +395,7 @@ void *main_thread(void *) {
     }
     pthread_testcancel();
     pthread_mutex_lock(&arptab_mutex);
-    parseproc();
+    parseproc(fileSystem);
     processarp(0);
     pthread_mutex_unlock(&arptab_mutex);
     usleep(SLEEPTIME);

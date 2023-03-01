@@ -7,7 +7,7 @@ CXXFLAGS = -g -O2 -std=c++17 -Wall -Wextra $(EXTRA_CFLAGS)
 
 # For ARM:
 # CFLAGS =  -Wall $(EXTRA_CFLAGS)
-OBJS = src/parprouted.o src/arp.o src/main.o
+OBJS = src/parprouted.o src/arp.o src/fs.o src/main.o
 
 LIBS = -lpthread
 
