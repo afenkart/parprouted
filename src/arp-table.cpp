@@ -60,6 +60,27 @@ class ArpTableImpl : public ArpTable {
 
     return &arptab.back();
   }
+
+  /* Remove all entires in arptab where ipaddr is NOT on interface dev */
+  int remove_other_routes(struct in_addr ipaddr, const char *dev) override {
+    int removed = 0;
+
+    auto it = std::find_if(std::begin(arptab), std::end(arptab),
+                           [&ipaddr, dev](auto &elt) {
+                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
+                                    strcmp(dev, elt.ifname) != 0;
+                           });
+
+    if (it != std::cend(arptab)) {
+      if (debug && it->want_route) {
+        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
+               it->ifname);
+      }
+      it->want_route = 0;
+      ++removed;
+    }
+    return removed;
+  }
 };
 
 } // namespace

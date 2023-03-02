@@ -40,27 +40,6 @@ int last_iface_idx = -1;
 std::vector<arptab_entry> arptab;
 pthread_mutex_t arptab_mutex;
 
-/* Remove all entires in arptab where ipaddr is NOT on interface dev */
-int remove_other_routes(struct in_addr ipaddr, const char *dev) {
-  int removed = 0;
-
-  auto it = std::find_if(std::begin(arptab), std::end(arptab),
-                         [&ipaddr, dev](auto &elt) {
-                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
-                                  strcmp(dev, elt.ifname) != 0;
-                         });
-
-  if (it != std::cend(arptab)) {
-    if (debug && it->want_route) {
-      printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
-             it->ifname);
-    }
-    it->want_route = 0;
-    ++removed;
-  }
-  return removed;
-}
-
 /* Remove route from kernel */
 int route_remove(ARPTAB_ENTRY *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
@@ -263,7 +242,7 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
       /* Remove route from kernel if it already exists through
          a different interface */
       if (entry->want_route) {
-        if (remove_other_routes(entry->ipaddr_ia, entry->ifname) > 0)
+        if (arpTable.remove_other_routes(entry->ipaddr_ia, entry->ifname) > 0)
           if (debug)
             printf("Found ARP entry %s(%s), removed entries via other "
                    "interfaces\n",

@@ -40,6 +40,9 @@ TEST_CASE("parprouted-test", TAGS) {
     REQUIRE_CALL(arpTable, replace_entry(_, _))
         .LR_RETURN(&newEntry)
         .IN_SEQUENCE(seq);
+    REQUIRE_CALL(arpTable, remove_other_routes(_, _))
+        .RETURN(0)
+        .IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(true).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fclose(_)).RETURN(0);
 
