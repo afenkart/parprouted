@@ -137,7 +137,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
 
 /* Send ARP who-has request */
 
-void arp_req(char *ifname, struct in_addr remaddr, int gratuitous) {
+void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   ether_arp_frame frame;
   struct ether_arp *arp = &frame.arp;
   int sock;
@@ -214,13 +214,13 @@ void arp_req(char *ifname, struct in_addr remaddr, int gratuitous) {
 
 /* ARP ping all entries in the table */
 
-void refresharp(std::vector<arptab_entry> &arptable) {
+void refresharp(ArpTable &arpTable) {
   if (debug)
     printf("Refreshing ARP entries.\n");
 
-  for (auto &entry : arptable) {
+  arpTable.apply([](const arptab_entry &entry) {
     arp_req(entry.ifname, entry.ipaddr_ia, 0);
-  }
+  });
 }
 
 int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {

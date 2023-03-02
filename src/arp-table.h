@@ -22,6 +22,7 @@
 
 #include <netinet/in.h>
 
+#include <functional>
 #include <memory>
 
 struct arptab_entry;
@@ -30,6 +31,7 @@ struct ArpTable {
   virtual int findentry(struct in_addr ipaddr) const = 0;
   virtual arptab_entry *replace_entry(struct in_addr ipaddr, char *dev) = 0;
   virtual int remove_other_routes(struct in_addr ipaddr, const char *dev) = 0;
+  virtual void apply(std::function<void(const arptab_entry &)>) = 0;
 };
 
 std::unique_ptr<ArpTable> makeArpTable();

@@ -81,6 +81,12 @@ class ArpTableImpl : public ArpTable {
     }
     return removed;
   }
+
+  void apply(std::function<void(const arptab_entry &)> func) {
+    for (auto &entry : arptab) {
+      func(entry);
+    }
+  }
 };
 
 } // namespace

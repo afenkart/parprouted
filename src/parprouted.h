@@ -75,8 +75,8 @@ struct FileSystem;
 struct ArpTable;
 
 extern void *arp(char *ifname, ArpTable &, FileSystem &);
-extern void refresharp(std::vector<arptab_entry> &);
-extern void arp_req(char *ifname, struct in_addr remaddr, int gratuitous);
+extern void refresharp(ArpTable &);
+extern void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous);
 
 extern void parseproc(ArpTable &, FileSystem &);
 extern void processarp(int cleanup);

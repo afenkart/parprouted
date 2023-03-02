@@ -55,7 +55,7 @@ void *main_thread(void *) {
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {
       pthread_mutex_lock(&arptab_mutex);
-      refresharp(arptab);
+      refresharp(*arpTable);
       pthread_mutex_unlock(&arptab_mutex);
       time(&last_refresh);
     }
