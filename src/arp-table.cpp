@@ -20,8 +20,6 @@
 
 #include "arp-table.h"
 
-// #include <arpa/inet.h>
-
 #include <algorithm>
 #include <vector>
 
@@ -41,6 +39,26 @@ class ArpTableImpl : public ArpTable {
       return 0;
     else
       return 1;
+  }
+
+  ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) override {
+
+    auto it = std::find_if(std::begin(arptab), std::end(arptab),
+                           [&ipaddr, dev](auto &elt) {
+                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
+                                    strncmp(elt.ifname, dev, strlen(dev)) == 0;
+                           });
+
+    if (it != std::cend(arptab)) {
+      return &*it;
+    }
+
+    if (debug)
+      printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
+
+    arptab.push_back({.want_route = 1});
+
+    return &arptab.back();
   }
 };
 

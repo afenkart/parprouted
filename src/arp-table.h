@@ -24,8 +24,11 @@
 
 #include <memory>
 
+struct arptab_entry;
+
 struct ArpTable {
   virtual int findentry(struct in_addr ipaddr) const = 0;
+  virtual arptab_entry *replace_entry(struct in_addr ipaddr, char *dev) = 0;
 };
 
 std::unique_ptr<ArpTable> makeArpTable();

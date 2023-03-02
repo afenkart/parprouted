@@ -36,8 +36,13 @@ TEST_CASE("parprouted-test", TAGS) {
             std::strcpy(_1, line))
         .RETURN(_1)
         .IN_SEQUENCE(seq);
+    arptab_entry newEntry{.want_route = 1};
+    REQUIRE_CALL(arpTable, replace_entry(_, _))
+        .LR_RETURN(&newEntry)
+        .IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(true).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fclose(_)).RETURN(0);
+
     parseproc(arpTable, fileSystem);
   }
 }

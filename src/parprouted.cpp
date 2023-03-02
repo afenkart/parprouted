@@ -40,26 +40,6 @@ int last_iface_idx = -1;
 std::vector<arptab_entry> arptab;
 pthread_mutex_t arptab_mutex;
 
-ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
-
-  auto it = std::find_if(std::begin(arptab), std::end(arptab),
-                         [&ipaddr, dev](auto &elt) {
-                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
-                                  strncmp(elt.ifname, dev, strlen(dev)) == 0;
-                         });
-
-  if (it != std::cend(arptab)) {
-    return &*it;
-  }
-
-  if (debug)
-    printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
-
-  arptab.push_back({.want_route = 1});
-
-  return &arptab.back();
-}
-
 /* Remove all entires in arptab where ipaddr is NOT on interface dev */
 int remove_other_routes(struct in_addr ipaddr, const char *dev) {
   int removed = 0;
@@ -223,6 +203,8 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
       /* if IP address is marked as undiscovered and does not exist in arptab,
          send ARP request to all ifaces */
 
+      std::cerr << "incomplete " << incomplete << "\n";
+
       if (incomplete && !arpTable.findentry(ipaddr)) {
         if (debug)
           printf("incomplete entry %s found, request on all interfaces\n",
@@ -250,7 +232,9 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
         dev[strlen(dev) - 1] = '\0';
       }
 
-      entry = replace_entry(ipaddr, dev);
+      entry = arpTable.replace_entry(ipaddr, dev);
+
+      std::cerr << "entry->incomplete " << entry->incomplete << "\n";
 
       if (entry->incomplete != incomplete && debug)
         printf("change entry %s(%s) to incomplete=%d\n", ip, dev, incomplete);
@@ -273,6 +257,8 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
         printf("%s(%s): set want_route %d\n", inet_ntoa(entry->ipaddr_ia),
                entry->ifname, !incomplete);
       entry->want_route = !incomplete;
+
+      std::cerr << "entry->want_route " << entry->want_route << "\n";
 
       /* Remove route from kernel if it already exists through
          a different interface */
