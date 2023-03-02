@@ -223,7 +223,7 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
       /* if IP address is marked as undiscovered and does not exist in arptab,
          send ARP request to all ifaces */
 
-      if (incomplete & !arpTable.findentry(ipaddr)) {
+      if (incomplete && !arpTable.findentry(ipaddr)) {
         if (debug)
           printf("incomplete entry %s found, request on all interfaces\n",
                  inet_ntoa(ipaddr));
