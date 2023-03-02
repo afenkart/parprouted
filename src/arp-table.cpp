@@ -1,0 +1,51 @@
+/* parprouted: ProxyARP routing daemon.
+ * (C) 2008 Vladimir Ivaschenko <vi@maks.net>
+ * (C) 2023 Andreas Fenkart <afenkart@gmail.com>
+ *
+ * This application is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include "arp-table.h"
+
+// #include <arpa/inet.h>
+
+#include <algorithm>
+#include <vector>
+
+#include "parprouted.h" // arptab_entry
+
+namespace {
+
+class ArpTableImpl : public ArpTable {
+  int findentry(struct in_addr ipaddr) const override {
+
+    auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
+                           [&ipaddr](const auto &elt) -> bool {
+                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
+                           });
+
+    if (it == std::cend(arptab))
+      return 0;
+    else
+      return 1;
+  }
+};
+
+} // namespace
+
+std::unique_ptr<ArpTable> makeArpTable() {
+  return std::make_unique<ArpTableImpl>();
+}

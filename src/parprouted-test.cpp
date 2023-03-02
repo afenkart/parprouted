@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 
+#include "arp-table-mock.h"
 #include "fs-mock.h"
 #include "parprouted.h"
 
@@ -11,7 +12,9 @@ using namespace trompeloeil;
 constexpr const char *TAGS = "foo";
 
 TEST_CASE("parprouted-test", TAGS) {
+  ArpTableMock arpTable{};
   FileSystemMock fileSystem{};
+
   SECTION("parseproc") {
     trompeloeil::sequence seq;
 
@@ -35,7 +38,7 @@ TEST_CASE("parprouted-test", TAGS) {
         .IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(true).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fclose(_)).RETURN(0);
-    parseproc(fileSystem);
+    parseproc(arpTable, fileSystem);
   }
 }
 

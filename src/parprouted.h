@@ -72,12 +72,13 @@ extern char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
 struct FileSystem;
+struct ArpTable;
 
-extern void *arp(char *ifname, FileSystem &);
+extern void *arp(char *ifname, ArpTable &, FileSystem &);
 extern void refresharp(std::vector<arptab_entry> &);
 extern void arp_req(char *ifname, struct in_addr remaddr, int gratuitous);
 
-extern void parseproc(FileSystem &);
+extern void parseproc(ArpTable &, FileSystem &);
 extern void processarp(int cleanup);
 
 extern std::vector<arptab_entry> arptab;

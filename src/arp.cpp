@@ -27,6 +27,7 @@
 
 #include <algorithm>
 
+#include "arp-table.h"
 #include "parprouted.h"
 
 typedef struct _ether_arp_frame {
@@ -265,12 +266,13 @@ int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
   return 1;
 }
 
-void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem) {
+void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem,
+                ArpTable &arpTable) {
   RQ_ENTRY *cur_entry;
   RQ_ENTRY *prev_entry = NULL;
 
   pthread_mutex_lock(&arptab_mutex);
-  parseproc(fileSystem);
+  parseproc(arpTable, fileSystem);
   processarp(0);
   pthread_mutex_unlock(&arptab_mutex);
 
@@ -314,7 +316,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem) {
   pthread_mutex_unlock(&req_queue_mutex);
 }
 
-void *arp(char *ifname, FileSystem &fileSystem) {
+void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
   int sock, i;
   struct sockaddr_ll ifs;
   struct ifreq ifr;
@@ -415,7 +417,7 @@ void *arp(char *ifname, FileSystem &fileSystem) {
         close(arpsock);
 
         /* Check if reply is for one of the requests in request queue */
-        rq_process(sin->sin_addr, ifs.sll_ifindex, fileSystem);
+        rq_process(sin->sin_addr, ifs.sll_ifindex, fileSystem, arpTable);
 
         /* send gratuitous arp request to all other interfaces to let them
          * update their ARP tables quickly */

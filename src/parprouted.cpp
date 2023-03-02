@@ -25,6 +25,7 @@
 #include <iostream>
 #include <vector>
 
+#include "arp-table.h"
 #include "fs.h"
 
 int debug = 0;
@@ -57,19 +58,6 @@ ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
   arptab.push_back({.want_route = 1});
 
   return &arptab.back();
-}
-
-int findentry(struct in_addr ipaddr) {
-
-  auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
-                         [&ipaddr](const auto &elt) -> bool {
-                           return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
-                         });
-
-  if (it == std::cend(arptab))
-    return 0;
-  else
-    return 1;
 }
 
 /* Remove all entires in arptab where ipaddr is NOT on interface dev */
@@ -181,7 +169,7 @@ void processarp(int in_cleanup) {
   }
 }
 
-void parseproc(FileSystem &fileSystem) {
+void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
   FILE *arpf;
   int firstline;
   ARPTAB_ENTRY *entry;
@@ -235,7 +223,7 @@ void parseproc(FileSystem &fileSystem) {
       /* if IP address is marked as undiscovered and does not exist in arptab,
          send ARP request to all ifaces */
 
-      if (incomplete & !findentry(ipaddr)) {
+      if (incomplete & !arpTable.findentry(ipaddr)) {
         if (debug)
           printf("incomplete entry %s found, request on all interfaces\n",
                  inet_ntoa(ipaddr));

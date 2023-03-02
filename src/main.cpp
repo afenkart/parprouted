@@ -1,5 +1,6 @@
 #include "parprouted.h"
 
+#include "arp-table.h"
 #include "fs.h"
 
 char *progname;
@@ -30,6 +31,7 @@ void sighandler(int) {
 }
 
 void *main_thread(void *) {
+  auto arpTable = makeArpTable();
   auto fileSystem = makeFileSystem();
 
   time_t last_refresh;
@@ -47,7 +49,7 @@ void *main_thread(void *) {
     }
     pthread_testcancel();
     pthread_mutex_lock(&arptab_mutex);
-    parseproc(*fileSystem);
+    parseproc(*arpTable, *fileSystem);
     processarp(0);
     pthread_mutex_unlock(&arptab_mutex);
     usleep(SLEEPTIME);
