@@ -48,6 +48,7 @@ pthread_mutex_t req_queue_mutex;
 
 /* Check if the IP address exists in the arptab */
 
+#if 0
 int ipaddr_known(std::vector<arptab_entry> arptable, struct in_addr addr,
                  char *ifname) {
 
@@ -71,6 +72,7 @@ int ipaddr_known(std::vector<arptab_entry> arptable, struct in_addr addr,
 
   return 0;
 }
+#endif
 
 /* Wait for an ARP packet */
 
