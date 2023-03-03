@@ -18,8 +18,7 @@ TEST_CASE("parprouted-test", TAGS) {
   SECTION("parseproc") {
     trompeloeil::sequence seq;
 
-    REQUIRE_CALL(fileSystem, fopen(_, _))
-        .RETURN(reinterpret_cast<FILE *>(0xdeadbeef));
+    REQUIRE_CALL(fileSystem, fopen(_, _)).RETURN(reinterpret_cast<FILE *>(0xdeadbeef));
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(false).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fgets(_, _, _))
         .LR_SIDE_EFFECT(
@@ -37,12 +36,8 @@ TEST_CASE("parprouted-test", TAGS) {
         .RETURN(_1)
         .IN_SEQUENCE(seq);
     arptab_entry newEntry{.want_route = 1};
-    REQUIRE_CALL(arpTable, replace_entry(_, _))
-        .LR_RETURN(&newEntry)
-        .IN_SEQUENCE(seq);
-    REQUIRE_CALL(arpTable, remove_other_routes(_, _))
-        .RETURN(0)
-        .IN_SEQUENCE(seq);
+    REQUIRE_CALL(arpTable, replace_entry(_, _)).LR_RETURN(&newEntry).IN_SEQUENCE(seq);
+    REQUIRE_CALL(arpTable, remove_other_routes(_, _)).RETURN(0).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(true).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fclose(_)).RETURN(0);
 

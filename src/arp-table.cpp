@@ -30,10 +30,10 @@ namespace {
 class ArpTableImpl : public ArpTable {
   int findentry(struct in_addr ipaddr) const override {
 
-    auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
-                           [&ipaddr](const auto &elt) -> bool {
-                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
-                           });
+    auto it =
+        std::find_if(std::cbegin(arptab), std::cend(arptab), [&ipaddr](const auto &elt) -> bool {
+          return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
+        });
 
     if (it == std::cend(arptab))
       return 0;
@@ -43,11 +43,9 @@ class ArpTableImpl : public ArpTable {
 
   ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) override {
 
-    auto it = std::find_if(std::begin(arptab), std::end(arptab),
-                           [&ipaddr, dev](auto &elt) {
-                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
-                                    strncmp(elt.ifname, dev, strlen(dev)) == 0;
-                           });
+    auto it = std::find_if(std::begin(arptab), std::end(arptab), [&ipaddr, dev](auto &elt) {
+      return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strncmp(elt.ifname, dev, strlen(dev)) == 0;
+    });
 
     if (it != std::cend(arptab)) {
       return &*it;
@@ -65,16 +63,13 @@ class ArpTableImpl : public ArpTable {
   int remove_other_routes(struct in_addr ipaddr, const char *dev) override {
     int removed = 0;
 
-    auto it = std::find_if(std::begin(arptab), std::end(arptab),
-                           [&ipaddr, dev](auto &elt) {
-                             return ipaddr.s_addr == elt.ipaddr_ia.s_addr &&
-                                    strcmp(dev, elt.ifname) != 0;
-                           });
+    auto it = std::find_if(std::begin(arptab), std::end(arptab), [&ipaddr, dev](auto &elt) {
+      return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strcmp(dev, elt.ifname) != 0;
+    });
 
     if (it != std::cend(arptab)) {
       if (debug && it->want_route) {
-        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
-               it->ifname);
+        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr), it->ifname);
       }
       it->want_route = 0;
       ++removed;
@@ -91,6 +86,4 @@ class ArpTableImpl : public ArpTable {
 
 } // namespace
 
-std::unique_ptr<ArpTable> makeArpTable() {
-  return std::make_unique<ArpTableImpl>();
-}
+std::unique_ptr<ArpTable> makeArpTable() { return std::make_unique<ArpTableImpl>(); }

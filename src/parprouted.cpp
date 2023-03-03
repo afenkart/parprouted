@@ -47,8 +47,7 @@ int route_remove(ARPTAB_ENTRY *cur_entry) {
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route del %s/32 metric 50 dev %s scope link",
-               inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
+               inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
     if (system(routecmd_str) != 0) {
@@ -75,8 +74,7 @@ int route_add(ARPTAB_ENTRY *cur_entry) {
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route add %s/32 metric 50 dev %s scope link",
-               inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
+               inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
     if (system(routecmd_str) != 0) {
@@ -101,12 +99,10 @@ void processarp(int in_cleanup) {
   std::vector<arptab_entry> expiredEntries{};
 
   auto expired = [in_cleanup](const arptab_entry &it) {
-    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
-           in_cleanup;
+    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT || in_cleanup;
   };
 
-  std::copy_if(std::cbegin(arptab), std::cend(arptab),
-               std::back_inserter(expiredEntries), expired);
+  std::copy_if(std::cbegin(arptab), std::cend(arptab), std::back_inserter(expiredEntries), expired);
 
   for (auto &it : expiredEntries) {
     if (it.route_added)
@@ -117,8 +113,7 @@ void processarp(int in_cleanup) {
       printf("Delete arp %s(%s)\n", inet_ntoa(it.ipaddr_ia), it.ifname);
   }
 
-  arptab.erase(std::remove_if(std::begin(arptab), std::end(arptab), expired),
-               arptab.end());
+  arptab.erase(std::remove_if(std::begin(arptab), std::end(arptab), expired), arptab.end());
 
   /* Now loop to add new routes */
   for (auto &elt : arptab) {
@@ -186,8 +181,7 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
 
       if (incomplete && !arpTable.findentry(ipaddr)) {
         if (debug)
-          printf("incomplete entry %s found, request on all interfaces\n",
-                 inet_ntoa(ipaddr));
+          printf("incomplete entry %s found, request on all interfaces\n", inet_ntoa(ipaddr));
         for (i = 0; i <= last_iface_idx; i++)
           arp_req(ifaces[i], ipaddr, 0);
       }
@@ -233,8 +227,8 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
 
       /* do not add routes for incomplete entries */
       if (debug && entry->want_route != !incomplete)
-        printf("%s(%s): set want_route %d\n", inet_ntoa(entry->ipaddr_ia),
-               entry->ifname, !incomplete);
+        printf("%s(%s): set want_route %d\n", inet_ntoa(entry->ipaddr_ia), entry->ifname,
+               !incomplete);
       entry->want_route = !incomplete;
 
       std::cerr << "entry->want_route " << entry->want_route << "\n";
@@ -254,8 +248,8 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
       if (debug && !entry->route_added && entry->want_route) {
         printf("arptab entry: '%s' HWAddr: '%s' Dev: '%s' route_added:%d "
                "want_route:%d\n",
-               inet_ntoa(entry->ipaddr_ia), entry->hwaddr, entry->ifname,
-               entry->route_added, entry->want_route);
+               inet_ntoa(entry->ipaddr_ia), entry->hwaddr, entry->ifname, entry->route_added,
+               entry->want_route);
       }
     }
   }

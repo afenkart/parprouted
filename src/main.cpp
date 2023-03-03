@@ -140,8 +140,7 @@ int main(int argc, char **argv) {
 
   for (i = 0; i <= last_iface_idx; i++) {
     if (pthread_create(&my_threads[++last_thread_idx], NULL,
-                       reinterpret_cast<void *(*)(void *)>(arp),
-                       (void *)ifaces[i])) {
+                       reinterpret_cast<void *(*)(void *)>(arp), (void *)ifaces[i])) {
       syslog(LOG_ERR, "Error creating ARP thread for %s.", ifaces[i]);
       abort();
     }

@@ -156,8 +156,8 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   memset(ifr.ifr_name, 0, IFNAMSIZ);
   strncpy(ifr.ifr_name, (char *)ifname, IFNAMSIZ);
   if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-    syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFHWADDR for %s: %s\n",
-           (char *)ifname, strerror(errno));
+    syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFHWADDR for %s: %s\n", (char *)ifname,
+           strerror(errno));
     abort();
   }
 
@@ -165,8 +165,8 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   memcpy(ifs.sll_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 
   if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0) {
-    syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFINDEX for %s: %s",
-           (char *)ifname, strerror(errno));
+    syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFINDEX for %s: %s", (char *)ifname,
+           strerror(errno));
     return;
   }
 
@@ -181,8 +181,7 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
     sin = (struct sockaddr_in *)&ifr.ifr_addr;
     ifaddr = sin->sin_addr.s_addr;
   } else {
-    syslog(LOG_ERR, "error: ioctl SIOCGIFADDR for %s: %s", (char *)ifname,
-           strerror(errno));
+    syslog(LOG_ERR, "error: ioctl SIOCGIFADDR for %s: %s", (char *)ifname, strerror(errno));
     return;
   }
 
@@ -218,9 +217,7 @@ void refresharp(ArpTable &arpTable) {
   if (debug)
     printf("Refreshing ARP entries.\n");
 
-  arpTable.apply([](const arptab_entry &entry) {
-    arp_req(entry.ifname, entry.ipaddr_ia, 0);
-  });
+  arpTable.apply([](const arptab_entry &entry) { arp_req(entry.ifname, entry.ipaddr_ia, 0); });
 }
 
 int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
@@ -268,8 +265,7 @@ int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
   return 1;
 }
 
-void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem,
-                ArpTable &arpTable) {
+void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem, ArpTable &arpTable) {
   RQ_ENTRY *cur_entry;
   RQ_ENTRY *prev_entry = NULL;
 
@@ -285,8 +281,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem,
   /* Walk through the list */
 
   while (cur_entry != NULL) {
-    if (ipaddr.s_addr ==
-            ((struct in_addr *)cur_entry->req_frame.arp.arp_tpa)->s_addr &&
+    if (ipaddr.s_addr == ((struct in_addr *)cur_entry->req_frame.arp.arp_tpa)->s_addr &&
         ifindex != cur_entry->req_if.sll_ifindex) {
 
       if (debug)
@@ -337,8 +332,7 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
   memset(ifr.ifr_name, 0, IFNAMSIZ);
   strncpy(ifr.ifr_name, (char *)ifname, IFNAMSIZ);
   if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-    syslog(LOG_ERR, "error: ioctl SIOCGIFHWADDR for %s: %s\n", (char *)ifname,
-           strerror(errno));
+    syslog(LOG_ERR, "error: ioctl SIOCGIFHWADDR for %s: %s\n", (char *)ifname, strerror(errno));
     abort();
   }
 
@@ -346,8 +340,7 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
   memcpy(ifs.sll_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 
   if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0) {
-    syslog(LOG_ERR, "error: ioctl SIOCGIFINDEX for %s: %s", (char *)ifname,
-           strerror(errno));
+    syslog(LOG_ERR, "error: ioctl SIOCGIFINDEX for %s: %s", (char *)ifname, strerror(errno));
     abort();
   }
 
@@ -387,14 +380,12 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
         struct sockaddr_in *sin;
 
         if ((arpsock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-          syslog(LOG_ERR, "error: ARP socket for %s: %s", (char *)ifname,
-                 strerror(errno));
+          syslog(LOG_ERR, "error: ARP socket for %s: %s", (char *)ifname, strerror(errno));
           continue;
         }
 
         k_arpreq.arp_ha.sa_family = ARPHRD_ETHER;
-        memcpy(&k_arpreq.arp_ha.sa_data, &frame.arp.arp_sha,
-               sizeof(frame.arp.arp_sha));
+        memcpy(&k_arpreq.arp_ha.sa_data, &frame.arp.arp_sha, sizeof(frame.arp.arp_sha));
         k_arpreq.arp_flags = ATF_COM;
         if (option_arpperm)
           k_arpreq.arp_flags = k_arpreq.arp_flags | ATF_PERM;
@@ -402,8 +393,7 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
 
         k_arpreq.arp_pa.sa_family = AF_INET;
         sin = (struct sockaddr_in *)&k_arpreq.arp_pa;
-        memcpy(&sin->sin_addr.s_addr, &frame.arp.arp_spa,
-               sizeof(sin->sin_addr));
+        memcpy(&sin->sin_addr.s_addr, &frame.arp.arp_spa, sizeof(sin->sin_addr));
 
         /* Update kernel ARP table with the data from reply */
 
@@ -411,8 +401,8 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
           printf("Received reply: updating kernel ARP table for %s(%s).\n",
                  inet_ntoa(sin->sin_addr), (char *)ifname);
         if (ioctl(arpsock, SIOCSARP, &k_arpreq) < 0) {
-          syslog(LOG_ERR, "error: ioctl SIOCSARP for %s(%s): %s",
-                 inet_ntoa(sin->sin_addr), (char *)ifname, strerror(errno));
+          syslog(LOG_ERR, "error: ioctl SIOCSARP for %s(%s): %s", inet_ntoa(sin->sin_addr),
+                 (char *)ifname, strerror(errno));
           close(arpsock);
           continue;
         }
@@ -440,8 +430,7 @@ void *arp(char *ifname, ArpTable &arpTable, FileSystem &fileSystem) {
     sia.s_addr = src;
 
     if (debug)
-      printf("Received ARP request for %s on iface %s\n", inet_ntoa(dia),
-             (char *)ifname);
+      printf("Received ARP request for %s on iface %s\n", inet_ntoa(dia), (char *)ifname);
 
     if (memcmp(&dia, &sia, sizeof(dia)) && dia.s_addr != 0) {
       pthread_mutex_lock(&arptab_mutex);
