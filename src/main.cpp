@@ -83,12 +83,10 @@ int main(int argc, char **argv) {
 
   auto fileSystem = makeFileSystem();
 
-  my_threads[++last_thread_idx] =
-      std::thread(main_thread, std::ref(*fileSystem));
+  my_threads[++last_thread_idx] = std::thread(main_thread, std::ref(*fileSystem));
 
   for (i = 0; i <= last_iface_idx; i++) {
-    my_threads[++last_thread_idx] =
-        std::thread(arp_thread, ifaces[i], std::ref(*fileSystem));
+    my_threads[++last_thread_idx] = std::thread(arp_thread, ifaces[i], std::ref(*fileSystem));
     if (debug) {
       printf("Created ARP thread for %s.\n", ifaces[i]);
     }

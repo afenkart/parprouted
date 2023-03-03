@@ -78,8 +78,7 @@ extern int last_iface_idx;
 struct FileSystem;
 extern void *arp_thread(const char *ifname, FileSystem &);
 extern void refresharp(arptab_entry *list);
-extern void arp_req(const char *ifname, struct in_addr remaddr,
-                    bool gratuitous);
+extern void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous);
 
 extern void parseproc(FileSystem &);
 extern void processarp(bool cleanup);

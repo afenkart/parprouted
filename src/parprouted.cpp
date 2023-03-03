@@ -40,9 +40,8 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
   arptab_entry *cur_entry = arptab;
   arptab_entry *prev_entry = NULL;
 
-  while (cur_entry != NULL &&
-         (ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr ||
-          (strncmp(cur_entry->ifname, dev, strlen(dev)) != 0))) {
+  while (cur_entry != NULL && (ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr ||
+                               (strncmp(cur_entry->ifname, dev, strlen(dev)) != 0))) {
     prev_entry = cur_entry;
     cur_entry = cur_entry->next;
   };
@@ -83,11 +82,9 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
   int removed = 0;
 
   for (cur_entry = arptab; cur_entry != NULL; cur_entry = cur_entry->next) {
-    if (ipaddr.s_addr == cur_entry->ipaddr_ia.s_addr &&
-        strcmp(dev, cur_entry->ifname) != 0) {
+    if (ipaddr.s_addr == cur_entry->ipaddr_ia.s_addr && strcmp(dev, cur_entry->ifname) != 0) {
       if (debug && cur_entry->want_route) {
-        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
-               cur_entry->ifname);
+        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr), cur_entry->ifname);
       }
       cur_entry->want_route = false;
       ++removed;
@@ -103,8 +100,7 @@ int route_remove(arptab_entry *cur_entry) {
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route del %s/32 metric 50 dev %s scope link",
-               inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
+               inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
     if (system(routecmd_str) != 0) {
@@ -134,8 +130,7 @@ int route_add(arptab_entry *cur_entry) {
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route add %s/32 metric 50 dev %s scope link",
-               inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
+               inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
     if (system(routecmd_str) != 0) {
@@ -163,16 +158,14 @@ void processarp(bool in_cleanup) {
   arptab_entry *cur_entry = arptab, *prev_entry = NULL;
 
   auto expired = [in_cleanup](const arptab_entry &it) {
-    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
-           in_cleanup;
+    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT || in_cleanup;
   };
 
   /* First loop to remove unwanted routes */
   while (cur_entry != NULL) {
     if (debug && verbose) {
-      printf("Working on route %s(%s) tstamp %u want_route %d\n",
-             inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname,
-             (int)cur_entry->tstamp, cur_entry->want_route);
+      printf("Working on route %s(%s) tstamp %u want_route %d\n", inet_ntoa(cur_entry->ipaddr_ia),
+             cur_entry->ifname, (int)cur_entry->tstamp, cur_entry->want_route);
     }
 
     if (expired(*cur_entry)) {
@@ -182,8 +175,7 @@ void processarp(bool in_cleanup) {
 
       /* remove from arp list */
       if (debug) {
-        printf("Delete arp %s(%s)\n", inet_ntoa(cur_entry->ipaddr_ia),
-               cur_entry->ifname);
+        printf("Delete arp %s(%s)\n", inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname);
       }
 
       if (prev_entry != NULL) {
@@ -271,8 +263,7 @@ void parseproc(FileSystem &fileSystem) {
 
       if (incomplete && !findentry(ipaddr)) {
         if (debug) {
-          printf("incomplete entry %s found, request on all interfaces\n",
-                 inet_ntoa(ipaddr));
+          printf("incomplete entry %s found, request on all interfaces\n", inet_ntoa(ipaddr));
         }
         for (i = 0; i <= last_iface_idx; i++) {
           arp_req(ifaces[i], ipaddr, false);
@@ -321,8 +312,8 @@ void parseproc(FileSystem &fileSystem) {
 
       /* do not add routes for incomplete entries */
       if (debug && entry->want_route != !incomplete) {
-        printf("%s(%s): set want_route %d\n", inet_ntoa(entry->ipaddr_ia),
-               entry->ifname, !incomplete);
+        printf("%s(%s): set want_route %d\n", inet_ntoa(entry->ipaddr_ia), entry->ifname,
+               !incomplete);
       }
       entry->want_route = !incomplete;
 
@@ -343,8 +334,8 @@ void parseproc(FileSystem &fileSystem) {
       if (debug && !entry->route_added && entry->want_route) {
         printf("arptab entry: '%s' HWAddr: '%s' Dev: '%s' route_added:%d "
                "want_route:%d\n",
-               inet_ntoa(entry->ipaddr_ia), entry->hwaddr, entry->ifname,
-               entry->route_added, entry->want_route);
+               inet_ntoa(entry->ipaddr_ia), entry->hwaddr, entry->ifname, entry->route_added,
+               entry->want_route);
       }
     }
   }
