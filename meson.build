@@ -36,9 +36,9 @@ if get_option('unit-tests').enabled()
   catch2 = dependency('catch2-with-main')
   trompeloeil = dependency('trompeloeil')
 
-  objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp'])
+  objs = parprouted.extract_objects(['src/arp.cpp', 'src/parprouted.cpp', 'src/arp-table.cpp'])
 
-  e = executable('parprouted-test', ['src/parprouted-test.cpp'],
+  e = executable('parprouted-test', ['src/parprouted-test.cpp', 'src/arp-table-test.cpp'],
     objects : objs,
     dependencies : [
       catch2,

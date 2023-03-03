@@ -9,7 +9,7 @@ namespace {
 using trompeloeil::_;
 using namespace trompeloeil;
 
-constexpr const char *TAGS = "foo";
+constexpr const char *TAGS = "routed";
 
 TEST_CASE("parprouted-test", TAGS) {
   ArpTableMock arpTable{};
