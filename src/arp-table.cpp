@@ -41,7 +41,7 @@ class ArpTableImpl : public ArpTable {
       return 1;
   }
 
-  ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) override {
+  arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) override {
 
     auto it = std::find_if(std::begin(arptab), std::end(arptab), [&ipaddr, dev](auto &elt) {
       return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strncmp(elt.ifname, dev, strlen(dev)) == 0;

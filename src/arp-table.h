@@ -24,10 +24,11 @@
 
 #include <functional>
 #include <memory>
+#include <compare>
 
 constexpr auto ARP_TABLE_ENTRY_LEN = 20;
 
-typedef struct arptab_entry {
+struct arptab_entry {
   struct in_addr ipaddr_ia;
   char hwaddr[ARP_TABLE_ENTRY_LEN];
   char ifname[ARP_TABLE_ENTRY_LEN];
@@ -35,7 +36,9 @@ typedef struct arptab_entry {
   int route_added;
   int incomplete;
   int want_route;
-} ARPTAB_ENTRY;
+
+  // friend auto operator<=>(const arptab_entry&, const arptab_entry&) const = default;
+};
 
 extern std::vector<arptab_entry> arptab;
 

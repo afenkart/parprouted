@@ -41,7 +41,7 @@ std::vector<arptab_entry> arptab;
 pthread_mutex_t arptab_mutex;
 
 /* Remove route from kernel */
-int route_remove(ARPTAB_ENTRY *cur_entry) {
+int route_remove(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   int success = 1;
 
@@ -68,7 +68,7 @@ int route_remove(ARPTAB_ENTRY *cur_entry) {
 }
 
 /* Add route into kernel */
-int route_add(ARPTAB_ENTRY *cur_entry) {
+int route_add(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   int success = 1;
 
@@ -126,7 +126,7 @@ void processarp(int in_cleanup) {
 void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
   FILE *arpf;
   int firstline;
-  ARPTAB_ENTRY *entry;
+  arptab_entry *entry;
   char line[ARP_LINE_LEN];
   struct in_addr ipaddr;
   int incomplete = 0;
