@@ -25,11 +25,23 @@
 #include <functional>
 #include <memory>
 
-struct arptab_entry;
+constexpr auto ARP_TABLE_ENTRY_LEN = 20;
+
+typedef struct arptab_entry {
+  struct in_addr ipaddr_ia;
+  char hwaddr[ARP_TABLE_ENTRY_LEN];
+  char ifname[ARP_TABLE_ENTRY_LEN];
+  time_t tstamp;
+  int route_added;
+  int incomplete;
+  int want_route;
+} ARPTAB_ENTRY;
+
+extern std::vector<arptab_entry> arptab;
 
 struct ArpTable {
   virtual int findentry(struct in_addr ipaddr) const = 0;
-  virtual arptab_entry *replace_entry(struct in_addr ipaddr, char *dev) = 0;
+  virtual arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) = 0;
   virtual int remove_other_routes(struct in_addr ipaddr, const char *dev) = 0;
   virtual void apply(std::function<void(const arptab_entry &)>) = 0;
 };

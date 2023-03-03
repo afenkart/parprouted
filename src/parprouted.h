@@ -20,7 +20,6 @@
 
 #define PROC_ARP "/proc/net/arp"
 #define ARP_LINE_LEN 255
-#define ARP_TABLE_ENTRY_LEN 20
 #define ARP_TABLE_ENTRY_TIMEOUT 60 /* seconds */
 #define ROUTE_CMD_LEN 255
 #define SLEEPTIME 1000000 /* ms */
@@ -50,16 +49,6 @@
 
 #include <vector>
 
-typedef struct arptab_entry {
-  struct in_addr ipaddr_ia;
-  char hwaddr[ARP_TABLE_ENTRY_LEN];
-  char ifname[ARP_TABLE_ENTRY_LEN];
-  time_t tstamp;
-  int route_added;
-  int incomplete;
-  int want_route;
-} ARPTAB_ENTRY;
-
 extern int debug;
 extern int verbose;
 
@@ -80,8 +69,6 @@ extern void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous);
 
 extern void parseproc(ArpTable &, FileSystem &);
 extern void processarp(int cleanup);
-
-extern std::vector<arptab_entry> arptab;
 
 // extern void sighandler(int);
 // void *main_thread(void *);
