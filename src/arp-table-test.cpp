@@ -30,9 +30,23 @@ TEST_CASE("arptable", TAGS) {
   auto arpTable_ = makeArpTable();
   auto &arpTable = *arpTable_;
 
-  in_addr inAddr{0x12171819};
+  in_addr inAddr1{0x12171819};
+  const char dev0[]{"dev0"};
 
-  SECTION("add/find") { CHECK(!arpTable.findentry(inAddr)); }
+  SECTION("add/find") {
+    WHEN("empty") {
+      CHECK(!arpTable.findentry(inAddr1));
+      WHEN("create new entry") {
+        auto &entry = *arpTable.replace_entry(inAddr1, dev0);
+        THEN("fields are not populated") { CHECK(entry == arptab_entry{.want_route = 1}); }
+        AND_THEN("entry contains no addresss or data") { CHECK(!arpTable.findentry(inAddr1)); }
+        WHEN("address is populated") {
+          entry.ipaddr_ia = inAddr1;
+          THEN("entry is found") { CHECK(arpTable.findentry(inAddr1)); }
+        }
+      }
+    }
+  }
 }
 
 } // namespace

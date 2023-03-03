@@ -24,9 +24,12 @@
 
 #include <functional>
 #include <memory>
-#include <compare>
 
 constexpr auto ARP_TABLE_ENTRY_LEN = 20;
+
+inline bool operator==(const in_addr &left, const in_addr &right) {
+  return left.s_addr == right.s_addr;
+}
 
 struct arptab_entry {
   struct in_addr ipaddr_ia;
@@ -37,7 +40,7 @@ struct arptab_entry {
   int incomplete;
   int want_route;
 
-  // friend auto operator<=>(const arptab_entry&, const arptab_entry&) const = default;
+  friend auto operator<=>(const arptab_entry &, const arptab_entry &) = default;
 };
 
 extern std::vector<arptab_entry> arptab;

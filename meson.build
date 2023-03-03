@@ -1,4 +1,4 @@
-project('parprouted', 'cpp')
+project('parprouted', 'cpp', default_options : ['cpp_std=gnu++20'])
 
 #pkg = import('pkgconfig')
 
