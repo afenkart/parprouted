@@ -30,12 +30,12 @@ char *errstr;
 char *ifaces[MAX_IFACES];
 int last_iface_idx = -1;
 
-ARPTAB_ENTRY **arptab;
+arptab_entry **arptab;
 pthread_mutex_t arptab_mutex;
 
-ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
-  ARPTAB_ENTRY *cur_entry = *arptab;
-  ARPTAB_ENTRY *prev_entry = NULL;
+arptab_entry *replace_entry(struct in_addr ipaddr, char *dev) {
+  arptab_entry *cur_entry = *arptab;
+  arptab_entry *prev_entry = NULL;
 
   while (cur_entry != NULL &&
          (ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr ||
@@ -48,7 +48,7 @@ ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
     if (debug)
       printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
 
-    if ((cur_entry = (ARPTAB_ENTRY *)malloc(sizeof(ARPTAB_ENTRY))) == NULL) {
+    if ((cur_entry = (arptab_entry *)malloc(sizeof(arptab_entry))) == NULL) {
       errstr = strerror(errno);
       syslog(LOG_INFO, "No memory: %s", errstr);
     } else {
@@ -68,7 +68,7 @@ ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
 }
 
 int findentry(struct in_addr ipaddr) {
-  ARPTAB_ENTRY *cur_entry = *arptab;
+  arptab_entry *cur_entry = *arptab;
 
   while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
     cur_entry = cur_entry->next;
@@ -82,7 +82,7 @@ int findentry(struct in_addr ipaddr) {
 
 /* Remove all entires in arptab where ipaddr is NOT on interface dev */
 int remove_other_routes(struct in_addr ipaddr, const char *dev) {
-  ARPTAB_ENTRY *cur_entry;
+  arptab_entry *cur_entry;
   int removed = 0;
 
   for (cur_entry = *arptab; cur_entry != NULL; cur_entry = cur_entry->next) {
@@ -99,7 +99,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
 }
 
 /* Remove route from kernel */
-int route_remove(ARPTAB_ENTRY *cur_entry) {
+int route_remove(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   int success = 1;
 
@@ -127,7 +127,7 @@ int route_remove(ARPTAB_ENTRY *cur_entry) {
 }
 
 /* Add route into kernel */
-int route_add(ARPTAB_ENTRY *cur_entry) {
+int route_add(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   int success = 1;
 
@@ -156,7 +156,7 @@ int route_add(ARPTAB_ENTRY *cur_entry) {
 }
 
 void processarp(int in_cleanup) {
-  ARPTAB_ENTRY *cur_entry = *arptab, *prev_entry = NULL;
+  arptab_entry *cur_entry = *arptab, *prev_entry = NULL;
 
   /* First loop to remove unwanted routes */
   while (cur_entry != NULL) {
@@ -207,7 +207,7 @@ void processarp(int in_cleanup) {
 void parseproc() {
   FILE *arpf;
   int firstline;
-  ARPTAB_ENTRY *entry;
+  arptab_entry *entry;
   char line[ARP_LINE_LEN];
   struct in_addr ipaddr;
   int incomplete = 0;

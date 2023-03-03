@@ -44,7 +44,7 @@ pthread_mutex_t req_queue_mutex;
 
 /* Check if the IP address exists in the arptab */
 
-int ipaddr_known(ARPTAB_ENTRY *list, struct in_addr addr, char *ifname) {
+int ipaddr_known(arptab_entry *list, struct in_addr addr, char *ifname) {
   while (list != NULL) {
     /* If we have this address in the table and ARP request comes from a
        different interface, then we can reply */
@@ -202,7 +202,7 @@ void arp_req(char *ifname, struct in_addr remaddr, int gratuitous) {
 
 /* ARP ping all entries in the table */
 
-void refresharp(ARPTAB_ENTRY *list) {
+void refresharp(arptab_entry *list) {
   if (debug)
     printf("Refreshing ARP entries.\n");
 

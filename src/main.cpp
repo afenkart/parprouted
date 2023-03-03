@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   signal(SIGTERM, sighandler);
   signal(SIGHUP, sighandler);
 
-  if ((arptab = (ARPTAB_ENTRY **)malloc(sizeof(ARPTAB_ENTRY **))) == NULL) {
+  if ((arptab = (arptab_entry **)malloc(sizeof(arptab_entry **))) == NULL) {
     auto errstr = strerror(errno);
     syslog(LOG_INFO, "No memory: %s", errstr);
   }
