@@ -41,6 +41,7 @@ struct arptab_entry {
   int want_route;
 
   friend auto operator<=>(const arptab_entry &, const arptab_entry &) = default;
+  // friend std::ostream operator<<(const std::ostream&, const arptab_entry&);
 };
 
 extern std::vector<arptab_entry> arptab;
