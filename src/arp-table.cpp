@@ -30,7 +30,7 @@ namespace {
 class ArpTableImpl : public ArpTable {
 public:
   ArpTableImpl() { arptab.clear(); }
-  int findentry(struct in_addr ipaddr) const override {
+  bool contains(struct in_addr ipaddr) const override {
 
     auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
                            [&ipaddr](const auto &elt) -> bool { return ipaddr == elt.ipaddr_ia; });

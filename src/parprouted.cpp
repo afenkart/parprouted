@@ -179,7 +179,7 @@ void parseproc(ArpTable &arpTable, FileSystem &fileSystem) {
 
       std::cerr << "incomplete " << incomplete << "\n";
 
-      if (incomplete && arpTable.findentry(ipaddr)) {
+      if (incomplete && arpTable.contains(ipaddr)) {
         if (debug)
           printf("incomplete entry %s found, request on all interfaces\n", inet_ntoa(ipaddr));
         for (i = 0; i <= last_iface_idx; i++)
