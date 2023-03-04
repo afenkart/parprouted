@@ -62,7 +62,7 @@ class ArpTableImpl : public ArpTable {
     int removed = 0;
 
     auto match = [&ipaddr, dev](const arptab_entry &elt) {
-      return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strcmp(dev, elt.ifname) != 0;
+      return ipaddr== elt.ipaddr_ia && strcmp(dev, elt.ifname) != 0;
     };
 
     auto it = std::find_if(std::begin(arptab), std::end(arptab), match);

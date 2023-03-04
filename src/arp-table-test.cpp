@@ -47,6 +47,7 @@ TEST_CASE("arptable", TAGS) {
       }
     }
   }
+  SECTION("remove other routes") {}
 }
 
 } // namespace
