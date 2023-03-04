@@ -14,3 +14,6 @@ meson setup --reconfigure -Db_coverage=true --native-file native.ini build
 https://roy.marples.name/projects/parpd/
 https://www.rfc-editor.org/rfc/rfc1027
 https://www.gsp.com/cgi-bin/man.cgi?section=8&topic=parpd
+
+ndppd
+https://serverfault.com/questions/1106884/bridged-wireless-with-parprouted-is-there-a-way-to-do-the-same-with-ipv6
