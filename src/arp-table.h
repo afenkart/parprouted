@@ -48,7 +48,7 @@ extern std::vector<arptab_entry> arptab;
 
 struct ArpTable {
   virtual ~ArpTable() = default;
-  virtual int findentry(struct in_addr ipaddr) const = 0;
+  virtual bool contains(struct in_addr ipaddr) const = 0;
   virtual arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) = 0;
   virtual int remove_other_routes(struct in_addr ipaddr, const char *dev) = 0;
   virtual void apply(std::function<void(const arptab_entry &)>) = 0;
