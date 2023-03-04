@@ -22,6 +22,12 @@
 
 #include <catch2/catch_all.hpp>
 
+#include <iostream>
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
 namespace {
 
 constexpr const char *TAGS = "arptable";
@@ -32,6 +38,8 @@ TEST_CASE("arptable", TAGS) {
 
   in_addr inAddr1{0x12171819};
   const char dev0[]{"dev0"};
+  const char dev1[]{"dev1"};
+  const char dev2[]{"dev2"};
 
   SECTION("add/find") {
     WHEN("empty") {
@@ -47,7 +55,24 @@ TEST_CASE("arptable", TAGS) {
       }
     }
   }
-  SECTION("remove other routes") {}
+  SECTION("remove_other_routes") {
+    WHEN("ip address on other device") {
+      for (const auto &dev : {dev1, dev2}) {
+        auto &entry = *arpTable.replace_entry(inAddr1, dev);
+        entry.ipaddr_ia = inAddr1;
+      }
+      THEN("two entries exist") {
+        int count{};
+        arpTable.apply([&count, inAddr1](const auto &elt) {
+          std::cout << inet_ntoa(elt.ipaddr_ia) << "\n";
+          if (elt.ipaddr_ia == inAddr1) {
+            count++;
+          }
+        });
+        CHECK(count == 2);
+      }
+    }
+  }
 }
 
 } // namespace

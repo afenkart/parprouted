@@ -28,6 +28,8 @@
 namespace {
 
 class ArpTableImpl : public ArpTable {
+public:
+  ArpTableImpl() { arptab.clear(); }
   int findentry(struct in_addr ipaddr) const override {
 
     auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
@@ -42,7 +44,7 @@ class ArpTableImpl : public ArpTable {
   arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) override {
 
     auto it = std::find_if(std::begin(arptab), std::end(arptab), [&ipaddr, dev](auto &elt) {
-      return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strncmp(elt.ifname, dev, strlen(dev)) == 0;
+      return ipaddr == elt.ipaddr_ia && strncmp(elt.ifname, dev, strlen(dev)) == 0;
     });
 
     if (it != std::cend(arptab)) {
@@ -62,7 +64,7 @@ class ArpTableImpl : public ArpTable {
     int removed = 0;
 
     auto match = [&ipaddr, dev](const arptab_entry &elt) {
-      return ipaddr== elt.ipaddr_ia && strcmp(dev, elt.ifname) != 0;
+      return ipaddr == elt.ipaddr_ia && strcmp(dev, elt.ifname) != 0;
     };
 
     auto it = std::find_if(std::begin(arptab), std::end(arptab), match);
