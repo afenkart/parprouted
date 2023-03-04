@@ -30,10 +30,8 @@ namespace {
 class ArpTableImpl : public ArpTable {
   int findentry(struct in_addr ipaddr) const override {
 
-    auto it =
-        std::find_if(std::cbegin(arptab), std::cend(arptab), [&ipaddr](const auto &elt) -> bool {
-          return ipaddr == elt.ipaddr_ia;
-        });
+    auto it = std::find_if(std::cbegin(arptab), std::cend(arptab),
+                           [&ipaddr](const auto &elt) -> bool { return ipaddr == elt.ipaddr_ia; });
 
     if (it == std::cend(arptab))
       return 0;
@@ -63,9 +61,11 @@ class ArpTableImpl : public ArpTable {
   int remove_other_routes(struct in_addr ipaddr, const char *dev) override {
     int removed = 0;
 
-    auto it = std::find_if(std::begin(arptab), std::end(arptab), [&ipaddr, dev](auto &elt) {
+    auto match = [&ipaddr, dev](const arptab_entry &elt) {
       return ipaddr.s_addr == elt.ipaddr_ia.s_addr && strcmp(dev, elt.ifname) != 0;
-    });
+    };
+
+    auto it = std::find_if(std::begin(arptab), std::end(arptab), match);
 
     if (it != std::cend(arptab)) {
       if (debug && it->want_route) {
