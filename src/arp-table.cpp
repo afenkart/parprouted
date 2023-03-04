@@ -32,7 +32,7 @@ class ArpTableImpl : public ArpTable {
 
     auto it =
         std::find_if(std::cbegin(arptab), std::cend(arptab), [&ipaddr](const auto &elt) -> bool {
-          return ipaddr.s_addr == elt.ipaddr_ia.s_addr;
+          return ipaddr == elt.ipaddr_ia;
         });
 
     if (it == std::cend(arptab))
