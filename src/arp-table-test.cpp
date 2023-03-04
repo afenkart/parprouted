@@ -64,23 +64,16 @@ TEST_CASE("arptable", TAGS) {
       auto wantRoute = [&arpTable](in_addr inAddr) {
         int count{};
         arpTable.apply([&count, inAddr = std::move(inAddr)](const auto &elt) {
+          std::cout << inet_ntoa(elt.ipaddr_ia) << "\n";
           if (elt.ipaddr_ia == inAddr && elt.want_route == 1) {
             count++;
           }
         });
         return count;
       };
-      THEN("two want route entries exist") {
-        int count{};
-        arpTable.apply([&count, inAddr1](const auto &elt) {
-          if (elt.ipaddr_ia == inAddr1 && elt.want_route == 1) {
-            count++;
-          }
-        });
-        CHECK(count == 2);
-      }
+      THEN("two want_route entries exist") { CHECK(wantRoute(inAddr1) == 2); }
       WHEN("remove_other_devices") {
-        arpTable.remove_other_routes(inAddr1, dev0);
+        CHECK(arpTable.remove_other_routes(inAddr1, dev0) == 2);
         THEN("no want_route entries exist") { CHECK(wantRoute(inAddr1) == 0); }
       }
     }

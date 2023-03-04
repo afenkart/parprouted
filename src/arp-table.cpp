@@ -67,13 +67,15 @@ public:
       return ipaddr == elt.ipaddr_ia && strcmp(dev, elt.ifname) != 0;
     };
 
-    auto it = std::find_if(std::begin(arptab), std::end(arptab), match);
-
-    if (it != std::cend(arptab)) {
-      if (debug && it->want_route) {
-        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr), it->ifname);
+    for (auto &elt : arptab) {
+      if (!match(elt)) {
+        continue;
       }
-      it->want_route = 0;
+
+      if (debug && elt.want_route) {
+        printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr), elt.ifname);
+      }
+      elt.want_route = 0;
       ++removed;
     }
     return removed;
