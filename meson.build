@@ -1,4 +1,5 @@
-project('parprouted', 'cpp')
+project('parprouted', 'cpp', default_options: [ 'warning_level=3'], version: '0.8.0', license: 'gpl-2.0+')
+
 
 parprouted = executable(
   'parprouted',
