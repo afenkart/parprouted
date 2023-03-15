@@ -75,13 +75,17 @@ extern int remove_other_routes(struct in_addr ipaddr, const char *dev);
 extern const char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
+struct Context;
 struct FileSystem;
-extern void *arp_thread(const char *ifname, FileSystem &);
+
+extern int route_remove(Context &, arptab_entry *);
+
+extern void *arp_thread(const char *ifname, FileSystem &, Context &);
 extern void refresharp(arptab_entry *list);
 extern void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous);
 
 extern void parseproc(FileSystem &);
-extern void processarp(bool cleanup);
+extern void processarp(Context &, bool cleanup);
 
 extern void sighandler(int);
-void *main_thread(FileSystem &fileSystem);
+void *main_thread(FileSystem &fileSystem, Context &context);

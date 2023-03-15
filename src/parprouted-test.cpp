@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 
+#include "context-mock.h"
 #include "fs-mock.h"
 #include "parprouted.h"
 
@@ -7,6 +8,7 @@ namespace {
 
 using trompeloeil::_;
 using namespace trompeloeil;
+using namespace std::string_literals;
 
 constexpr const char *TAGS = "foo";
 
@@ -21,6 +23,29 @@ TEST_CASE("parprouted-test", TAGS) {
 
   CHECK(arptab == nullptr);
   FileSystemMock fileSystem{};
+  ContextMock context{};
+
+  SECTION("route_remove") {
+    GIVEN("entry with added route") {
+      auto entry = arptab_entry{.ipaddr_ia = in_addr{htonl(0x01020304)},
+                                .hwaddr = "",
+                                .ifname = "dev0",
+                                .route_added = 1};
+
+      THEN("entry is removed") {
+        REQUIRE_CALL(context,
+                     system(eq("/sbin/ip route del 1.2.3.4/32 metric 50 dev dev0 scope link"s)))
+            .RETURN(0);
+        CHECK(route_remove(context, &entry) == 1);
+        CHECK(entry.route_added == 0);
+      }
+      WHEN("syscall fails") {
+        REQUIRE_CALL(context, system(_)).RETURN(-1);
+        CHECK(route_remove(context, &entry) == 0);
+        THEN("assume route remains") { CHECK(entry.route_added == 1); }
+      }
+    }
+  }
 
   in_addr ip1{htonl(0x00000001)};
   in_addr ip2{htonl(0x00000002)};
@@ -117,7 +142,12 @@ TEST_CASE("parprouted-test", TAGS) {
           CHECK(sizeCache() == 2); // nothing actually removed yet
         }
         WHEN("processarp") {
-          processarp(false);
+          // adding link fails -> delete in error handling
+          REQUIRE_CALL(context, system(_))
+              .SIDE_EFFECT(CHECK(std::string(_1) ==
+                                 "/sbin/ip route del 0.0.0.1/32 metric 50 dev dev0 scope link"s))
+              .RETURN(0);
+          processarp(context, false);
           THEN("entry is removed") {
             CHECK(sizeCache() == 1);
             CHECK(replace_entry(ip1, dev0) == entry1);
@@ -126,8 +156,15 @@ TEST_CASE("parprouted-test", TAGS) {
       }
       WHEN("remove_other_routes for non dev3") {
         CHECK(remove_other_routes(ip1, "dev3") == 2);
+        entry1->route_added = entry2->route_added = true; // bogus: same ip, different device
         WHEN("processarp") {
-          processarp(false);
+          REQUIRE_CALL(context,
+                       system(eq("/sbin/ip route del 0.0.0.1/32 metric 50 dev dev0 scope link"s)))
+              .RETURN(0);
+          REQUIRE_CALL(context,
+                       system(eq("/sbin/ip route del 0.0.0.1/32 metric 50 dev dev1 scope link"s)))
+              .RETURN(0);
+          processarp(context, false);
           THEN("both entries removed") { CHECK(emptyCache()); }
         }
       }
@@ -143,10 +180,17 @@ TEST_CASE("parprouted-test", TAGS) {
         return entry;
       };
       [[maybe_unused]] auto entry1 = createExpiredEntry(ip1, dev0);
-      [[maybe_unused]] auto entry2 = createExpiredEntry(ip1, dev1);
+      [[maybe_unused]] auto entry2 = createExpiredEntry(ip2, dev1);
+      entry1->route_added = entry2->route_added = true;
 
       WHEN("processarp") {
-        processarp(false);
+        REQUIRE_CALL(context,
+                     system(eq("/sbin/ip route del 0.0.0.1/32 metric 50 dev dev0 scope link"s)))
+            .RETURN(0);
+        REQUIRE_CALL(context,
+                     system(eq("/sbin/ip route del 0.0.0.2/32 metric 50 dev dev1 scope link"s)))
+            .RETURN(0);
+        processarp(context, false);
         THEN("cache is empty") { CHECK(emptyCache()); }
       }
     }

@@ -20,6 +20,7 @@
 
 #include "parprouted.h"
 
+#include "context.h"
 #include "fs.h"
 
 bool debug = false;
@@ -94,7 +95,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
 }
 
 /* Remove route from kernel */
-int route_remove(arptab_entry *cur_entry) {
+int route_remove(Context &context, arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   bool success = true;
 
@@ -103,7 +104,7 @@ int route_remove(arptab_entry *cur_entry) {
                inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
-    if (system(routecmd_str) != 0) {
+    if (context.system(routecmd_str) != 0) {
       syslog(LOG_INFO, "'%s' unsuccessful!", routecmd_str);
       if (debug) {
         printf("%s failed\n", routecmd_str);
@@ -124,7 +125,7 @@ int route_remove(arptab_entry *cur_entry) {
 }
 
 /* Add route into kernel */
-int route_add(arptab_entry *cur_entry) {
+int route_add(Context &context, arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
   bool success = true;
 
@@ -138,7 +139,7 @@ int route_add(arptab_entry *cur_entry) {
       if (debug) {
         printf("%s failed\n", routecmd_str);
       }
-      route_remove(cur_entry);
+      route_remove(context, cur_entry);
       success = false;
     } else {
       if (debug) {
@@ -154,7 +155,7 @@ int route_add(arptab_entry *cur_entry) {
   return success;
 }
 
-void processarp(bool in_cleanup) {
+void processarp(Context &context, bool in_cleanup) {
   arptab_entry *cur_entry = arptab, *prev_entry = NULL;
 
   auto expired = [in_cleanup](const arptab_entry &it) {
@@ -170,7 +171,7 @@ void processarp(bool in_cleanup) {
 
     if (expired(*cur_entry)) {
       if (cur_entry->route_added) {
-        route_remove(cur_entry);
+        route_remove(context, cur_entry);
       }
 
       /* remove from arp list */
@@ -198,7 +199,7 @@ void processarp(bool in_cleanup) {
   while (cur_entry != NULL) {
     if (!expired(*cur_entry) && !cur_entry->route_added) {
       /* add route to the kernel */
-      route_add(cur_entry);
+      route_add(context, cur_entry);
     }
     cur_entry = cur_entry->next;
   } /* while loop */
@@ -346,7 +347,7 @@ void parseproc(FileSystem &fileSystem) {
   }
 }
 
-void cleanup(void * /* unused */) {
+void cleanup(void *arg) {
   /* FIXME: I think this is a wrong way to do it ... */
 
   syslog(LOG_INFO, "Received signal; cleaning up.");
@@ -355,8 +356,9 @@ void cleanup(void * /* unused */) {
       pthread_cancel(my_threads[i]);
   }
   */
+  auto &[context] = *static_cast<std::tuple<Context &> *>(arg);
   pthread_mutex_trylock(&arptab_mutex);
-  processarp(true);
+  processarp(context, true);
   syslog(LOG_INFO, "Terminating.");
   exit(1);
 }
@@ -366,7 +368,7 @@ void sighandler(int /* unused */) {
   perform_shutdown = true;
 }
 
-void *main_thread(FileSystem &fileSystem) {
+void *main_thread(FileSystem &fileSystem, Context &context) {
   time_t last_refresh{};
 
   signal(SIGINT, sighandler);
@@ -375,7 +377,11 @@ void *main_thread(FileSystem &fileSystem) {
 
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  pthread_cleanup_push(cleanup, NULL);
+
+  // pass reference to local variable
+  auto cleanupArgs = std::make_tuple(std::ref(context));
+  pthread_cleanup_push(cleanup, &cleanupArgs);
+
   while (true) {
     if (perform_shutdown) {
       pthread_exit(0);
@@ -383,7 +389,7 @@ void *main_thread(FileSystem &fileSystem) {
     pthread_testcancel();
     pthread_mutex_lock(&arptab_mutex);
     parseproc(fileSystem);
-    processarp(false);
+    processarp(context, false);
     pthread_mutex_unlock(&arptab_mutex);
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {

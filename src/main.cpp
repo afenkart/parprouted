@@ -1,5 +1,6 @@
 #include "parprouted.h"
 
+#include "context.h"
 #include "fs.h"
 
 #include <string>
@@ -82,11 +83,14 @@ int main(int argc, char **argv) {
   pthread_mutex_init(&req_queue_mutex, NULL);
 
   auto fileSystem = makeFileSystem();
+  auto context = makeContext();
 
-  my_threads[++last_thread_idx] = std::thread(main_thread, std::ref(*fileSystem));
+  my_threads[++last_thread_idx] =
+      std::thread(main_thread, std::ref(*fileSystem), std::ref(*context));
 
   for (i = 0; i <= last_iface_idx; i++) {
-    my_threads[++last_thread_idx] = std::thread(arp_thread, ifaces[i], std::ref(*fileSystem));
+    my_threads[++last_thread_idx] =
+        std::thread(arp_thread, ifaces[i], std::ref(*fileSystem), std::ref(*context));
     if (debug) {
       printf("Created ARP thread for %s.\n", ifaces[i]);
     }
