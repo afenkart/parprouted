@@ -134,7 +134,7 @@ int route_add(Context &context, arptab_entry *cur_entry) {
                inet_ntoa(cur_entry->ipaddr_ia), cur_entry->ifname) > ROUTE_CMD_LEN - 1) {
     syslog(LOG_INFO, "ip route command too large to fit in buffer!");
   } else {
-    if (system(routecmd_str) != 0) {
+    if (context.system(routecmd_str) != 0) {
       syslog(LOG_INFO, "'%s' unsuccessful, will try to remove!", routecmd_str);
       if (debug) {
         printf("%s failed\n", routecmd_str);

@@ -79,6 +79,7 @@ struct Context;
 struct FileSystem;
 
 extern int route_remove(Context &, arptab_entry *);
+extern int route_add(Context &, arptab_entry *);
 
 extern void *arp_thread(const char *ifname, FileSystem &, Context &);
 extern void refresharp(arptab_entry *list);

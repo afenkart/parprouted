@@ -45,6 +45,47 @@ TEST_CASE("parprouted-test", TAGS) {
         THEN("assume route remains") { CHECK(entry.route_added == 1); }
       }
     }
+    GIVEN("entry without added route") {
+      auto entry =
+          arptab_entry{.ipaddr_ia = in_addr{htonl(0x01020304)}, .ifname = "dev0", .route_added = 0};
+
+      THEN("entry is still removed") {
+        REQUIRE_CALL(context, system(_))
+            .SIDE_EFFECT(CHECK(std::string(_1) ==
+                               "/sbin/ip route del 1.2.3.4/32 metric 50 dev dev0 scope link"s))
+            .RETURN(0);
+        CHECK(route_remove(context, &entry) == 1);
+        CHECK(entry.route_added == 0);
+      }
+    }
+  }
+
+  SECTION("route_add") {
+    GIVEN("new entry") {
+      auto entry =
+          arptab_entry{.ipaddr_ia = in_addr{htonl(0x01020304)}, .ifname = "dev0", .route_added = 0};
+
+      THEN("entry is added") {
+        REQUIRE_CALL(context, system(_))
+            .SIDE_EFFECT(CHECK(std::string(_1) ==
+                               "/sbin/ip route add 1.2.3.4/32 metric 50 dev dev0 scope link"s))
+            .RETURN(0);
+        CHECK(route_add(context, &entry) == 1);
+        CHECK(entry.route_added == 1);
+      }
+      WHEN("syscall fails") {
+        trompeloeil::sequence seq;
+        REQUIRE_CALL(context, system(_)).RETURN(-1).IN_SEQUENCE(seq);
+        REQUIRE_CALL(context, system(_))
+            .SIDE_EFFECT(CHECK(std::string(_1) ==
+                               "/sbin/ip route del 1.2.3.4/32 metric 50 dev dev0 scope link"s))
+            .RETURN(0)
+            .IN_SEQUENCE(seq);
+        CHECK(route_add(context, &entry) == 0); // calls route_remove internally
+
+        THEN("route is not marked present") { CHECK(entry.route_added == 0); }
+      }
+    }
   }
 
   in_addr ip1{htonl(0x00000001)};
@@ -142,15 +183,14 @@ TEST_CASE("parprouted-test", TAGS) {
           CHECK(sizeCache() == 2); // nothing actually removed yet
         }
         WHEN("processarp") {
-          // adding link fails -> delete in error handling
-          REQUIRE_CALL(context, system(_))
-              .SIDE_EFFECT(CHECK(std::string(_1) ==
-                                 "/sbin/ip route del 0.0.0.1/32 metric 50 dev dev0 scope link"s))
+          REQUIRE_CALL(context,
+                       system(eq("/sbin/ip route add 0.0.0.1/32 metric 50 dev dev0 scope link"s)))
               .RETURN(0);
           processarp(context, false);
-          THEN("entry is removed") {
+          THEN("entry2 is removed / entry1 route active") {
             CHECK(sizeCache() == 1);
             CHECK(replace_entry(ip1, dev0) == entry1);
+            CHECK(entry1->route_added == true);
           }
         }
       }
