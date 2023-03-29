@@ -125,7 +125,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
 
 /* Send ARP who-has request */
 
-void arp_req(char *ifname, struct in_addr remaddr, int gratuitous) {
+void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   ether_arp_frame frame;
   struct ether_arp *arp = &frame.arp;
   int sock;
@@ -306,7 +306,7 @@ void rq_process(struct in_addr ipaddr, int ifindex) {
   pthread_mutex_unlock(&req_queue_mutex);
 }
 
-void *arp(char *ifname) {
+void *arp(const char *ifname) {
   int sock, i;
   struct sockaddr_ll ifs;
   struct ifreq ifr;

@@ -27,13 +27,13 @@ static int perform_shutdown = 0;
 
 char *errstr;
 
-char *ifaces[MAX_IFACES];
+const char *ifaces[MAX_IFACES];
 int last_iface_idx = -1;
 
 arptab_entry **arptab;
 pthread_mutex_t arptab_mutex;
 
-arptab_entry *replace_entry(struct in_addr ipaddr, char *dev) {
+arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
   arptab_entry *cur_entry = *arptab;
   arptab_entry *prev_entry = NULL;
 

@@ -67,12 +67,12 @@ extern arptab_entry **arptab;
 extern pthread_mutex_t arptab_mutex;
 extern pthread_mutex_t req_queue_mutex;
 
-extern char *ifaces[MAX_IFACES];
+extern const char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
-extern void *arp(char *ifname);
+extern void *arp(const char *ifname);
 extern void refresharp(arptab_entry *list);
-extern void arp_req(char *ifname, struct in_addr remaddr, int gratuitous);
+extern void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous);
 
 extern void parseproc();
 extern void processarp(int cleanup);
