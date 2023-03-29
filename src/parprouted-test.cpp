@@ -15,6 +15,47 @@ TEST_CASE("parprouted-test", TAGS) {
   CHECK(arptab == nullptr); // global list head
   FileSystemMock fileSystem{};
 
+  in_addr ip1{htonl(0x00000001)};
+  in_addr ip2{htonl(0x00000002)};
+  const char *dev0{"dev0"};
+  const char *dev1{"dev1"};
+
+  SECTION("arp table cache") {
+
+    GIVEN("empty cache") {
+      WHEN("replace_entry entry") {
+        auto entry = replace_entry(ip1, dev0);
+        CHECK(entry != nullptr);
+        CHECK(arptab == entry);
+
+        WHEN("not populating the new entry") {
+          THEN("same entry is added again") {
+            auto entry2 = replace_entry(ip1, dev0);
+            CHECK(entry2 != entry);
+          }
+        }
+
+        WHEN("populating the new entry") {
+          strcpy(entry->ifname, dev0);
+          entry->ipaddr_ia = ip1;
+
+          THEN("same entry is not added") {
+            auto entry2 = replace_entry(ip1, dev0);
+            CHECK(entry2 == entry);
+          }
+          WHEN("same ip different interface") {
+            auto entry2 = replace_entry(ip1, dev1);
+            THEN("new entry is created") { CHECK(entry2 != entry); }
+          }
+          WHEN("different ip same interface") {
+            auto entry2 = replace_entry(ip2, dev0);
+            THEN("new entry is created") { CHECK(entry2 != entry); }
+          }
+        }
+      }
+    }
+  }
+
   SECTION("parseproc") {
     trompeloeil::sequence seq;
 
