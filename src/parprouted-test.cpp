@@ -26,10 +26,21 @@ TEST_CASE("parprouted-test", TAGS) {
   const char *dev0{"dev0"};
   const char *dev1{"dev1"};
 
+  auto emptyCache = []() { return arptab == nullptr; };
+
+  auto sizeCache = []() {
+    int count{};
+    for (const auto *cur = arptab; cur; cur = cur->next) {
+      count++;
+    }
+    return count;
+  };
+
   SECTION("arp table cache") {
     GIVEN("empty cache") {
       THEN("cache is empty") {
-        CHECK(arptab == nullptr);
+        CHECK(emptyCache());
+        CHECK(sizeCache() == 0);
         CHECK(findentry(ip1) == 0);
         CHECK(findentry(ip2) == 0); // false
       }
