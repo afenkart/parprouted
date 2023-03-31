@@ -11,6 +11,7 @@ using namespace trompeloeil;
 constexpr const char *TAGS = "foo";
 
 TEST_CASE("parprouted-test", TAGS) {
+  // debug = verbose = true;
 
   [](auto &list) {
     while (list != nullptr) {
@@ -90,11 +91,13 @@ TEST_CASE("parprouted-test", TAGS) {
         }
       }
     }
+
     GIVEN("cache with 2 entries: ip1@dev0, ip1@dev1") {
       auto createEntry = [](auto &&ip, auto &&dev) {
         auto entry = replace_entry(ip, dev);
         strcpy(entry->ifname, dev);
         entry->ipaddr_ia = ip;
+        entry->tstamp = time(NULL);
         return entry;
       };
       [[maybe_unused]] auto entry1 = createEntry(ip1, dev0);
@@ -106,8 +109,27 @@ TEST_CASE("parprouted-test", TAGS) {
         CHECK(sizeCache() == 2);
       }
       WHEN("remove_other_routes for non dev0") {
+        debug = verbose = true;
         CHECK(remove_other_routes(ip1, dev0) == 1);
-        CHECK(sizeCache() == 2); // nothing actually removed
+        THEN("entries only marked for removal") {
+          CHECK(entry1->want_route == true);
+          CHECK(entry2->want_route == false);
+          CHECK(sizeCache() == 2); // nothing actually removed yet
+        }
+        WHEN("processarp") {
+          processarp(false);
+          THEN("entry is removed") {
+            CHECK(sizeCache() == 1);
+            CHECK(replace_entry(ip1, dev0) == entry1);
+          }
+        }
+      }
+      WHEN("remove_other_routes for non dev3") {
+        CHECK(remove_other_routes(ip1, "dev3") == 2);
+        WHEN("processarp") {
+          processarp(false);
+          THEN("both entries removed") { CHECK(emptyCache()); }
+        }
       }
     }
   }
