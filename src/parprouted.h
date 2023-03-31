@@ -70,6 +70,7 @@ extern pthread_mutex_t arptab_mutex;
 extern pthread_mutex_t req_queue_mutex;
 
 arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev);
+extern int findentry(struct in_addr ipaddr);
 
 extern const char *ifaces[MAX_IFACES];
 extern int last_iface_idx;

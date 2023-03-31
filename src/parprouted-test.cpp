@@ -27,14 +27,20 @@ TEST_CASE("parprouted-test", TAGS) {
   const char *dev1{"dev1"};
 
   SECTION("arp table cache") {
-
     GIVEN("empty cache") {
+      THEN("cache is empty") {
+        CHECK(arptab == nullptr);
+        CHECK(findentry(ip1) == 0);
+        CHECK(findentry(ip2) == 0); // false
+      }
+
       WHEN("replace_entry entry") {
         auto entry = replace_entry(ip1, dev0);
         CHECK(entry != nullptr);
         CHECK(arptab == entry);
 
         WHEN("not populating the new entry") {
+          THEN("entry is not found by ip") { CHECK(findentry(ip1) == 0); }
           THEN("same entry is added again") {
             auto entry2 = replace_entry(ip1, dev0);
             CHECK(entry2 != entry);
@@ -49,13 +55,26 @@ TEST_CASE("parprouted-test", TAGS) {
             auto entry2 = replace_entry(ip1, dev0);
             CHECK(entry2 == entry);
           }
+          THEN("entry is found by ip") {
+            CHECK(findentry(ip1) == 1);
+            CHECK(findentry(ip2) == 0); // false
+          }
           WHEN("same ip different interface") {
             auto entry2 = replace_entry(ip1, dev1);
             THEN("new entry is created") { CHECK(entry2 != entry); }
+
+            THEN("entry is found by ip") { CHECK(findentry(ip1) == 1); }
           }
           WHEN("different ip same interface") {
             auto entry2 = replace_entry(ip2, dev0);
             THEN("new entry is created") { CHECK(entry2 != entry); }
+
+            WHEN("populating new entry") {
+              strcpy(entry2->ifname, dev0);
+              entry2->ipaddr_ia = ip2;
+
+              THEN("entry is found by ip") { CHECK(findentry(ip2) == 1); }
+            }
           }
         }
       }
