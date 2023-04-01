@@ -132,6 +132,24 @@ TEST_CASE("parprouted-test", TAGS) {
         }
       }
     }
+
+    GIVEN("2 expired entries") {
+      auto now = time(NULL);
+      auto createExpiredEntry = [now](auto &&ip, auto &&dev) {
+        auto entry = replace_entry(ip, dev);
+        strcpy(entry->ifname, dev);
+        entry->ipaddr_ia = ip;
+        entry->tstamp = now - 2 * ARP_TABLE_ENTRY_TIMEOUT;
+        return entry;
+      };
+      [[maybe_unused]] auto entry1 = createExpiredEntry(ip1, dev0);
+      [[maybe_unused]] auto entry2 = createExpiredEntry(ip1, dev1);
+
+      WHEN("processarp") {
+        processarp(false);
+        THEN("cache is empty") { CHECK(emptyCache()); }
+      }
+    }
   }
 
   SECTION("parseproc") {
