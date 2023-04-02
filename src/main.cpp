@@ -1,6 +1,8 @@
 #include "parprouted.h"
 
-char *progname;
+#include <string>
+
+std::string progname{};
 
 int last_thread_idx = -1;
 pthread_t my_threads[MAX_IFACES + 1];
@@ -9,7 +11,7 @@ int main(int argc, char **argv) {
   pid_t child_pid;
   int i, help = 1;
 
-  progname = (char *)basename(argv[0]);
+  progname = basename(argv[0]);
 
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-d")) {
@@ -42,7 +44,7 @@ int main(int argc, char **argv) {
     } else if (child_pid > 0) {
       /* fork was ok, wait for child to exit */
       if (waitpid(child_pid, NULL, 0) != child_pid) {
-        perror(progname);
+        perror(progname.c_str());
         exit(1);
       }
       /* and exit myself */
@@ -50,7 +52,7 @@ int main(int argc, char **argv) {
     }
     /* and fork again to make sure we inherit all rights from init */
     if ((child_pid = fork()) < 0) {
-      perror(progname);
+      perror(progname.c_str());
       exit(1);
     } else if (child_pid > 0)
       exit(0);
@@ -64,7 +66,7 @@ int main(int argc, char **argv) {
     close(2);
   }
 
-  openlog(progname, LOG_PID | LOG_CONS | LOG_PERROR, LOG_DAEMON);
+  openlog(progname.c_str(), LOG_PID | LOG_CONS | LOG_PERROR, LOG_DAEMON);
   syslog(LOG_INFO, "Starting.");
 
   signal(SIGINT, sighandler);
