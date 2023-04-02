@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#pragma once
+
 #define PROC_ARP "/proc/net/arp"
 #define ARP_LINE_LEN 255
 #define ARP_TABLE_ENTRY_LEN 20
