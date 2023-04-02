@@ -71,7 +71,7 @@ extern const char *ifaces[MAX_IFACES];
 extern int last_iface_idx;
 
 struct FileSystem;
-extern void *arp(const char *ifname, FileSystem &);
+extern void *arp_thread(const char *ifname, FileSystem &);
 extern void refresharp(arptab_entry *list);
 extern void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous);
 

@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
   for (i = 0; i <= last_iface_idx; i++) {
     my_threads[++last_thread_idx] =
-        std::thread(arp, ifaces[i], std::ref(*fileSystem));
+        std::thread(arp_thread, ifaces[i], std::ref(*fileSystem));
     if (debug) {
       printf("Created ARP thread for %s.\n", ifaces[i]);
     }

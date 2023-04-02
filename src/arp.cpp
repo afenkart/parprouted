@@ -316,7 +316,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem) {
   pthread_mutex_unlock(&req_queue_mutex);
 }
 
-void *arp(const char *ifname, FileSystem &fileSystem) {
+void *arp_thread(const char *ifname, FileSystem &fileSystem) {
   int sock, i;
   struct sockaddr_ll ifs;
   struct ifreq ifr;
