@@ -102,6 +102,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
   memcpy(&arp->arp_tha, &arp->arp_sha, ETH_ALEN);
   memcpy(&arp->arp_sha, ifs->sll_addr, ETH_ALEN);
 
+  // std::swap(arp->arp_spa, arp->arp_tpa);
   memcpy(ip, &arp->arp_spa, 4);
   memcpy(&arp->arp_spa, &arp->arp_tpa, 4);
   memcpy(&arp->arp_tpa, ip, 4);
@@ -112,8 +113,8 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
     struct in_addr sia;
     struct in_addr dia;
 
-    sia.s_addr = *((long *)arp->arp_spa);
-    dia.s_addr = *((long *)arp->arp_tpa);
+    memcpy(&sia.s_addr, arp->arp_spa, 4);
+    memcpy(&dia.s_addr, arp->arp_tpa, 4);
 
     printf("Replying to %s faking %s\n", inet_ntoa(sia), inet_ntoa(dia));
   }
@@ -363,8 +364,6 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem) {
 
   while (1) {
     ether_arp_frame frame;
-    unsigned long src;
-    unsigned long dst;
     struct in_addr sia;
     struct in_addr dia;
 
@@ -434,11 +433,8 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem) {
 
     /* Received frame is an ARP request */
 
-    memcpy(&src, frame.arp.arp_spa, 4);
-    memcpy(&dst, frame.arp.arp_tpa, 4);
-
-    dia.s_addr = dst;
-    sia.s_addr = src;
+    memcpy(&sia.s_addr, frame.arp.arp_spa, 4);
+    memcpy(&dia.s_addr, frame.arp.arp_tpa, 4);
 
     if (debug) {
       printf("Received ARP request for %s on iface %s\n", inet_ntoa(dia),
