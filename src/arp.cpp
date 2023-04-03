@@ -65,18 +65,19 @@ int ipaddr_known(ARPTAB_ENTRY *list, struct in_addr addr, char *ifname) {
 
 int arp_recv(int sock, ether_arp_frame *frame) {
   char packet[4096];
-  int nread;
 
   memset(frame, 0, sizeof(ether_arp_frame));
 
-  nread = recv(sock, &packet, sizeof(packet), 0);
+  ssize_t nread = recv(sock, &packet, sizeof(packet), 0);
+  if (nread < 0) {
+    return -1;
+  }
 
-  if (nread > sizeof(ether_arp_frame)) {
-    nread = sizeof(ether_arp_frame);
+  if (static_cast<size_t>(nread) > sizeof(ether_arp_frame)) {
+    nread = sizeof(ether_arp_frame); // TODO
   }
 
   memcpy(frame, &packet, nread);
-
   return nread;
 }
 
