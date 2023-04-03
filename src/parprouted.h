@@ -63,7 +63,7 @@ extern int verbose;
 
 extern int option_arpperm;
 
-extern arptab_entry **arptab;
+extern arptab_entry *arptab;
 extern pthread_mutex_t arptab_mutex;
 extern pthread_mutex_t req_queue_mutex;
 

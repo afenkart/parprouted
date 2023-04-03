@@ -74,13 +74,6 @@ int main(int argc, char **argv) {
   signal(SIGTERM, sighandler);
   signal(SIGHUP, sighandler);
 
-  if ((arptab = (arptab_entry **)malloc(sizeof(arptab_entry **))) == NULL) {
-    auto errstr = strerror(errno);
-    syslog(LOG_INFO, "No memory: %s", errstr);
-  }
-
-  *arptab = NULL;
-
   pthread_mutex_init(&arptab_mutex, NULL);
   pthread_mutex_init(&req_queue_mutex, NULL);
 

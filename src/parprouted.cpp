@@ -30,11 +30,11 @@ char *errstr;
 const char *ifaces[MAX_IFACES];
 int last_iface_idx = -1;
 
-arptab_entry **arptab;
+arptab_entry *arptab = nullptr;
 pthread_mutex_t arptab_mutex;
 
 arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
-  arptab_entry *cur_entry = *arptab;
+  arptab_entry *cur_entry = arptab;
   arptab_entry *prev_entry = NULL;
 
   while (cur_entry != NULL &&
@@ -53,7 +53,7 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
       syslog(LOG_INFO, "No memory: %s", errstr);
     } else {
       if (prev_entry == NULL) {
-        *arptab = cur_entry;
+        arptab = cur_entry;
       } else {
         prev_entry->next = cur_entry;
       }
@@ -68,7 +68,7 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
 }
 
 int findentry(struct in_addr ipaddr) {
-  arptab_entry *cur_entry = *arptab;
+  arptab_entry *cur_entry = arptab;
 
   while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
     cur_entry = cur_entry->next;
@@ -85,7 +85,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
   arptab_entry *cur_entry;
   int removed = 0;
 
-  for (cur_entry = *arptab; cur_entry != NULL; cur_entry = cur_entry->next) {
+  for (cur_entry = arptab; cur_entry != NULL; cur_entry = cur_entry->next) {
     if (ipaddr.s_addr == cur_entry->ipaddr_ia.s_addr &&
         strcmp(dev, cur_entry->ifname) != 0) {
       if (debug && cur_entry->want_route)
@@ -156,7 +156,7 @@ int route_add(arptab_entry *cur_entry) {
 }
 
 void processarp(int in_cleanup) {
-  arptab_entry *cur_entry = *arptab, *prev_entry = NULL;
+  arptab_entry *cur_entry = arptab, *prev_entry = NULL;
 
   /* First loop to remove unwanted routes */
   while (cur_entry != NULL) {
@@ -182,9 +182,9 @@ void processarp(int in_cleanup) {
         free(cur_entry);
         cur_entry = prev_entry->next;
       } else {
-        *arptab = cur_entry->next;
+        arptab = cur_entry->next;
         free(cur_entry);
-        cur_entry = *arptab;
+        cur_entry = arptab;
       }
     } else {
       prev_entry = cur_entry;
@@ -193,7 +193,7 @@ void processarp(int in_cleanup) {
   } /* while loop */
 
   /* Now loop to add new routes */
-  cur_entry = *arptab;
+  cur_entry = arptab;
   while (cur_entry != NULL) {
     if (time(NULL) - cur_entry->tstamp <= ARP_TABLE_ENTRY_TIMEOUT &&
         cur_entry->want_route && !cur_entry->route_added && !in_cleanup) {
@@ -378,7 +378,7 @@ void *main_thread(void *) {
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {
       pthread_mutex_lock(&arptab_mutex);
-      refresharp(*arptab);
+      refresharp(arptab);
       pthread_mutex_unlock(&arptab_mutex);
       time(&last_refresh);
     }

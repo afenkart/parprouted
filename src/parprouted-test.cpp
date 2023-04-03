@@ -10,8 +10,7 @@ constexpr const char *TAGS = "foo";
 
 TEST_CASE("parprouted-test", TAGS) {
 
-  arptab_entry *arptab_head = nullptr;
-  arptab = &arptab_head; // global list head
+  CHECK(arptab == nullptr); // global list head
 
   SECTION("parseproc") { parseproc(); }
 }
