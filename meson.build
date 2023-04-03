@@ -48,3 +48,6 @@ if get_option('unit-tests').enabled()
   )
   test('basic tests', e)
 endif
+
+run_target('staticanalyze', command: 'scripts/staticanalyze.sh')
+
