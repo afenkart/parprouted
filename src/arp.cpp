@@ -79,7 +79,7 @@ int arp_recv(int sock, ether_arp_frame *frame) {
   }
 
   memcpy(frame, &packet, nread);
-  return nread;
+  return static_cast<int>(nread);
 }
 
 /* Send ARP is-at reply */
