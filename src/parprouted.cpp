@@ -357,7 +357,7 @@ void sighandler(int /* unused */) {
 }
 
 void *main_thread(void *) {
-  time_t last_refresh;
+  time_t last_refresh{};
 
   signal(SIGINT, sighandler);
   signal(SIGTERM, sighandler);
