@@ -48,14 +48,14 @@
 #include <unistd.h>
 
 struct arptab_entry {
-  struct in_addr ipaddr_ia;
-  char hwaddr[ARP_TABLE_ENTRY_LEN];
-  char ifname[ARP_TABLE_ENTRY_LEN];
-  time_t tstamp;
-  int route_added;
-  int incomplete;
-  int want_route;
-  struct arptab_entry *next;
+  struct in_addr ipaddr_ia {};
+  char hwaddr[ARP_TABLE_ENTRY_LEN] = "";
+  char ifname[ARP_TABLE_ENTRY_LEN] = "";
+  time_t tstamp{};
+  int route_added{false};
+  int incomplete{false};
+  int want_route{false};
+  struct arptab_entry *next = nullptr;
 };
 
 extern int debug;
