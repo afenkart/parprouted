@@ -48,8 +48,8 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
     if (debug)
       printf("Creating new arptab entry %s(%s)\n", inet_ntoa(ipaddr), dev);
 
-    if ((cur_entry = (arptab_entry *)malloc(sizeof(arptab_entry))) == NULL) {
-      errstr = strerror(errno);
+    if ((cur_entry = new arptab_entry()) == NULL) { // std::bad_alloc
+      errstr = strerror(errno);                     // not reached -> exception
       syslog(LOG_INFO, "No memory: %s", errstr);
     } else {
       if (prev_entry == NULL) {
@@ -57,9 +57,6 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
       } else {
         prev_entry->next = cur_entry;
       }
-      cur_entry->next = NULL;
-      cur_entry->ifname[0] = '\0';
-      cur_entry->route_added = 0;
       cur_entry->want_route = 1;
     }
   }
@@ -179,11 +176,11 @@ void processarp(int in_cleanup) {
 
       if (prev_entry != NULL) {
         prev_entry->next = cur_entry->next;
-        free(cur_entry);
+        delete cur_entry;
         cur_entry = prev_entry->next;
       } else {
         arptab = cur_entry->next;
-        free(cur_entry);
+        delete cur_entry;
         cur_entry = arptab;
       }
     } else {
