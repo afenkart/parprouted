@@ -1,11 +1,12 @@
 #include "parprouted.h"
 
 #include <string>
+#include <thread>
 
 std::string progname{};
 
 int last_thread_idx = -1;
-pthread_t my_threads[MAX_IFACES + 1];
+std::thread my_threads[MAX_IFACES + 1];
 
 int main(int argc, char **argv) {
   pid_t child_pid;
@@ -83,25 +84,15 @@ int main(int argc, char **argv) {
   pthread_mutex_init(&arptab_mutex, NULL);
   pthread_mutex_init(&req_queue_mutex, NULL);
 
-  if (pthread_create(&my_threads[++last_thread_idx], NULL, main_thread, NULL)) {
-    syslog(LOG_ERR, "Error creating main thread.");
-    abort();
-  }
+  my_threads[++last_thread_idx] = std::thread(main_thread, nullptr);
 
   for (i = 0; i <= last_iface_idx; i++) {
-    if (pthread_create(&my_threads[++last_thread_idx], NULL,
-                       reinterpret_cast<void *(*)(void *)>(arp), ifaces[i])) {
-      syslog(LOG_ERR, "Error creating ARP thread for %s.", ifaces[i]);
-      abort();
-    }
+    my_threads[++last_thread_idx] = std::thread(arp, ifaces[i]);
     if (debug)
       printf("Created ARP thread for %s.\n", ifaces[i]);
   }
 
-  if (pthread_join(my_threads[0], NULL)) {
-    syslog(LOG_ERR, "Error joining thread.");
-    abort();
-  }
+  my_threads[0].join();
 
   while (waitpid(-1, NULL, WNOHANG)) {
   }
