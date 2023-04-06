@@ -12,7 +12,13 @@ constexpr const char *TAGS = "foo";
 
 TEST_CASE("parprouted-test", TAGS) {
 
-  CHECK(arptab == nullptr); // global list head
+  [](auto &list) {
+    while (list != nullptr) {
+      free(std::exchange(list, list->next));
+    }
+  }(arptab);
+
+  CHECK(arptab == nullptr);
   FileSystemMock fileSystem{};
 
   in_addr ip1{htonl(0x00000001)};
