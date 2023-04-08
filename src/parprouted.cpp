@@ -166,6 +166,11 @@ int route_add(arptab_entry *cur_entry) {
 void processarp(int in_cleanup) {
   arptab_entry *cur_entry = arptab, *prev_entry = NULL;
 
+  auto expired = [in_cleanup](const arptab_entry &it) {
+    return !it.want_route || time(NULL) - it.tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
+           in_cleanup;
+  };
+
   /* First loop to remove unwanted routes */
   while (cur_entry != NULL) {
     if (debug && verbose) {
@@ -174,10 +179,7 @@ void processarp(int in_cleanup) {
              (int)cur_entry->tstamp, cur_entry->want_route);
     }
 
-    if (!cur_entry->want_route ||
-        time(NULL) - cur_entry->tstamp > ARP_TABLE_ENTRY_TIMEOUT ||
-        in_cleanup) {
-
+    if (expired(*cur_entry)) {
       if (cur_entry->route_added) {
         route_remove(cur_entry);
       }
@@ -206,8 +208,7 @@ void processarp(int in_cleanup) {
   /* Now loop to add new routes */
   cur_entry = arptab;
   while (cur_entry != NULL) {
-    if (time(NULL) - cur_entry->tstamp <= ARP_TABLE_ENTRY_TIMEOUT &&
-        cur_entry->want_route && !cur_entry->route_added && !in_cleanup) {
+    if (!expired(*cur_entry) && !cur_entry->route_added) {
       /* add route to the kernel */
       route_add(cur_entry);
     }
