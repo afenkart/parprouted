@@ -191,6 +191,10 @@ TEST_CASE("parprouted-test", TAGS) {
             CHECK(replace_entry(ip1, dev0) == entry1);
             CHECK(entry1->route_added == true);
           }
+          WHEN("calling processarp again") {
+            processarp(context, false);
+            THEN("route is not added again") { CHECK(true); }
+          }
         }
       }
       WHEN("remove_other_routes for non dev3") {
