@@ -137,13 +137,13 @@ TEST_CASE("parprouted-test", TAGS) {
             CHECK(findentry(ip1) == 1);
             CHECK(findentry(ip2) == 0); // false
           }
-          WHEN("same ip different interface") {
+          WHEN("add same ip different interface") {
             auto entry2 = replace_entry(ip1, dev1);
             THEN("new entry is created") { CHECK(entry2 != entry); }
 
             THEN("entry is found by ip") { CHECK(findentry(ip1) == 1); }
           }
-          WHEN("different ip same interface") {
+          WHEN("add different ip same interface") {
             auto entry2 = replace_entry(ip2, dev0);
             THEN("new entry is created") { CHECK(entry2 != entry); }
 
@@ -175,7 +175,6 @@ TEST_CASE("parprouted-test", TAGS) {
         CHECK(sizeCache() == 2);
       }
       WHEN("remove_other_routes for non dev0") {
-        debug = verbose = true;
         CHECK(remove_other_routes(ip1, dev0) == 1);
         THEN("entries only marked for removal") {
           CHECK(entry1->want_route == true);
