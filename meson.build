@@ -65,5 +65,3 @@ if clangtidy.found()
         ],
     depends: parprouted)
 endif
-
-
