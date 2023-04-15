@@ -2,10 +2,11 @@ project('parprouted', 'cpp', default_options: [ 'warning_level=3'], version: '0.
 
 add_global_arguments(['-Wuseless-cast'], language: 'cpp')
 
+cpp_files = files('src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp')
 
 parprouted = executable(
   'parprouted',
-   [ 'src/parprouted.cpp', 'src/arp.cpp', 'src/main.cpp' ],
+  cpp_files,
   install: true,
   install_dir: 'sbin',
 )
@@ -50,4 +51,19 @@ if get_option('unit-tests').enabled()
 endif
 
 run_target('staticanalyze', command: 'scripts/staticanalyze.sh')
+
+clangtidy = find_program('clang-tidy', required: false)
+if clangtidy.found()
+    run_target(
+        'clang-tidy',
+        command: [
+            'scripts/clang-tidy.sh',
+            clangtidy.path(),
+            meson.source_root(),
+            meson.build_root(),
+            cpp_files,
+        ],
+    depends: parprouted)
+endif
+
 
