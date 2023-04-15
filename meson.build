@@ -1,2 +1,2 @@
-project('parprouted', 'c')
-executable('parprouted', 'src/parprouted.c', 'src/arp.c')
+project('parprouted', 'cpp')
+executable('parprouted', 'src/parprouted.cpp', 'src/arp.cpp')

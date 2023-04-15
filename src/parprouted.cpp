@@ -161,7 +161,7 @@ int route_add(ARPTAB_ENTRY* cur_entry)
 }
 
 
-void processarp(int in_cleanup) 
+void processarp(int in_cleanup)
 {
     ARPTAB_ENTRY *cur_entry=*arptab, *prev_entry=NULL;
 
@@ -330,7 +330,7 @@ void parseproc()
     }
 }
 
-void cleanup() 
+void cleanup(void * /* unused */)
 {
     /* FIXME: I think this is a wrong way to do it ... */
     
@@ -346,13 +346,13 @@ void cleanup()
     exit(1);
 }
 
-void sighandler()
+void sighandler(int /* unused */)
 {
     /* FIXME: I think this is a wrong way to do it ... */
     perform_shutdown=1;
 }
 
-void *main_thread()
+void *main_thread(void *)
 {
     time_t last_refresh;
 
@@ -471,7 +471,7 @@ int main (int argc, char **argv)
     }
 
     for (i=0; i <= last_iface_idx; i++) {
-	if (pthread_create(&my_threads[++last_thread_idx], NULL, (void *) arp, (void *) ifaces[i])) {
+	if (pthread_create(&my_threads[++last_thread_idx], NULL, reinterpret_cast<void* (*)(void*)>(arp), ifaces[i])) {
 	    syslog(LOG_ERR, "Error creating ARP thread for %s.",ifaces[i]);
 	    abort();
 	}

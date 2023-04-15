@@ -5,6 +5,8 @@ PREFIX = $(DESTDIR)/usr
 #CC = gcc
 
 CFLAGS = -g -O2 -Wall $(EXTRA_CFLAGS)
+CXXFLAGS = -g -O2 -std=c++17 -Wall $(EXTRA_CFLAGS)
+
 # For ARM:
 # CFLAGS =  -Wall $(EXTRA_CFLAGS)
 OBJS = src/parprouted.o src/arp.o
@@ -21,11 +23,11 @@ clean:
 	rm -f $(OBJS) parprouted core
 
 parprouted:	${OBJS}
-	${CC} -g -o parprouted ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS}
+	${CXX} -g -o parprouted ${OBJS} ${CXXFLAGS} ${LDFLAGS} ${LIBS}
 
 parprouted.8:	parprouted.pod
 	pod2man --section=8 --center="Proxy ARP Bridging Daemon" parprouted.pod --release "parprouted" --date "`date '+%B %Y'`" > parprouted.8
 
-parprouted.o : parprouted.c parprouted.h
+parprouted.o : parprouted.cpp parprouted.h
 
-arp.o : arp.c parprouted.h
+arp.o : arp.cpp parprouted.h
