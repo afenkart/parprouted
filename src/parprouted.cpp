@@ -73,10 +73,8 @@ ARPTAB_ENTRY *replace_entry(struct in_addr ipaddr, char *dev) {
 
 int findentry(struct in_addr ipaddr) {
   ARPTAB_ENTRY *cur_entry = *arptab;
-  ARPTAB_ENTRY *prev_entry = NULL;
 
   while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
-    prev_entry = cur_entry;
     cur_entry = cur_entry->next;
   };
 
