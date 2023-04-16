@@ -218,7 +218,7 @@ void parseproc() {
   struct in_addr ipaddr;
   int incomplete = 0;
   int i;
-  char *ip, *mac, *dev, *hw, *flags, *mask;
+  [[maybe_unused]] char *ip, *mac, *dev, *hw, *flags, *mask;
 
   /* Parse /proc/net/arp table */
 
