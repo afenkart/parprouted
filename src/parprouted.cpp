@@ -159,7 +159,7 @@ int route_add(arptab_entry *cur_entry) {
   return success;
 }
 
-void processarp(int in_cleanup) {
+void processarp(bool in_cleanup) {
   arptab_entry *cur_entry = arptab, *prev_entry = NULL;
 
   auto expired = [in_cleanup](const arptab_entry &it) {

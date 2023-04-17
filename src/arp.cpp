@@ -127,7 +127,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
 
 /* Send ARP who-has request */
 
-void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
+void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous) {
   ether_arp_frame frame;
   struct ether_arp *arp = &frame.arp;
   int sock;
