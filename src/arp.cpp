@@ -213,7 +213,7 @@ void refresharp(arptab_entry *list) {
   }
 
   while (list != NULL) {
-    arp_req(list->ifname, list->ipaddr_ia, 0);
+    arp_req(list->ifname, list->ipaddr_ia, false);
     list = list->next;
   }
 }
@@ -271,7 +271,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem) {
 
   pthread_mutex_lock(&arptab_mutex);
   parseproc(fileSystem);
-  processarp(0);
+  processarp(false);
   pthread_mutex_unlock(&arptab_mutex);
 
   pthread_mutex_lock(&req_queue_mutex);
@@ -362,7 +362,7 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem) {
     abort();
   }
 
-  while (1) {
+  while (true) {
     ether_arp_frame frame;
     struct in_addr sia;
     struct in_addr dia;
@@ -425,7 +425,7 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem) {
          * update their ARP tables quickly */
         for (i = 0; i <= last_iface_idx; i++) {
           if (strcmp(ifaces[i], ifname)) {
-            arp_req(ifaces[i], sin->sin_addr, 1);
+            arp_req(ifaces[i], sin->sin_addr, true);
           }
         }
       }
@@ -446,7 +446,7 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem) {
       /* Relay the ARP request to all other interfaces */
       for (i = 0; i <= last_iface_idx; i++) {
         if (strcmp(ifaces[i], ifname)) {
-          arp_req(ifaces[i], dia, 0);
+          arp_req(ifaces[i], dia, false);
         }
       }
       /* Add the request to the request queue */

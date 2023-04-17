@@ -22,11 +22,11 @@
 
 #include "fs.h"
 
-bool debug = 0;
-bool verbose = 0;
-bool option_arpperm = 0;
+bool debug = false;
+bool verbose = false;
+bool option_arpperm = false;
 
-static bool perform_shutdown = 0;
+static bool perform_shutdown = false;
 
 char *errstr;
 
@@ -61,7 +61,7 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
       } else {
         prev_entry->next = cur_entry;
       }
-      cur_entry->want_route = 1;
+      cur_entry->want_route = true;
     }
   }
 
@@ -89,7 +89,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
         printf("Marking entry %s(%s) for removal\n", inet_ntoa(ipaddr),
                cur_entry->ifname);
       }
-      cur_entry->want_route = 0;
+      cur_entry->want_route = false;
       ++removed;
     }
   }
@@ -99,7 +99,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
 /* Remove route from kernel */
 int route_remove(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
-  bool success = 1;
+  bool success = true;
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route del %s/32 metric 50 dev %s scope link",
@@ -112,16 +112,16 @@ int route_remove(arptab_entry *cur_entry) {
       if (debug) {
         printf("%s failed\n", routecmd_str);
       }
-      success = 0;
+      success = false;
     } else {
       if (debug) {
         printf("%s success\n", routecmd_str);
       }
-      success = 1;
+      success = true;
     }
   }
   if (success) {
-    cur_entry->route_added = 0;
+    cur_entry->route_added = false;
   }
 
   return success;
@@ -130,7 +130,7 @@ int route_remove(arptab_entry *cur_entry) {
 /* Add route into kernel */
 int route_add(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
-  bool success = 1;
+  bool success = true;
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route add %s/32 metric 50 dev %s scope link",
@@ -144,16 +144,16 @@ int route_add(arptab_entry *cur_entry) {
         printf("%s failed\n", routecmd_str);
       }
       route_remove(cur_entry);
-      success = 0;
+      success = false;
     } else {
       if (debug) {
         printf("%s success\n", routecmd_str);
       }
-      success = 1;
+      success = true;
     }
   }
   if (success) {
-    cur_entry->route_added = 1;
+    cur_entry->route_added = true;
   }
 
   return success;
@@ -228,7 +228,7 @@ void parseproc(FileSystem &fileSystem) {
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
 
-  bool firstline = 1;
+  bool firstline = true;
 
   while (!fileSystem.feof(arpf)) {
 
@@ -241,23 +241,23 @@ void parseproc(FileSystem &fileSystem) {
       }
     } else {
       if (firstline) {
-        firstline = 0;
+        firstline = false;
         continue;
       }
       if (debug && verbose) {
         printf("read ARP line %s", line);
       }
 
-      incomplete = 0;
+      incomplete = false;
 
       /* Incomplete ARP entries with MAC 00:00:00:00:00:00 */
       if (strstr(line, "00:00:00:00:00:00") != NULL) {
-        incomplete = 1;
+        incomplete = true;
       }
 
       /* Incomplete entries having flag 0x0 */
       if (strstr(line, "0x0") != NULL) {
-        incomplete = 1;
+        incomplete = true;
       }
 
       ip = strtok(line, " ");
@@ -275,7 +275,7 @@ void parseproc(FileSystem &fileSystem) {
                  inet_ntoa(ipaddr));
         }
         for (i = 0; i <= last_iface_idx; i++) {
-          arp_req(ifaces[i], ipaddr, 0);
+          arp_req(ifaces[i], ipaddr, false);
         }
       }
 
@@ -365,14 +365,14 @@ void cleanup(void * /* unused */) {
   }
   */
   pthread_mutex_trylock(&arptab_mutex);
-  processarp(1);
+  processarp(true);
   syslog(LOG_INFO, "Terminating.");
   exit(1);
 }
 
 void sighandler(int /* unused */) {
   /* FIXME: I think this is a wrong way to do it ... */
-  perform_shutdown = 1;
+  perform_shutdown = true;
 }
 
 void *main_thread(FileSystem &fileSystem) {
@@ -385,14 +385,14 @@ void *main_thread(FileSystem &fileSystem) {
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
   pthread_cleanup_push(cleanup, NULL);
-  while (1) {
+  while (true) {
     if (perform_shutdown) {
       pthread_exit(0);
     }
     pthread_testcancel();
     pthread_mutex_lock(&arptab_mutex);
     parseproc(fileSystem);
-    processarp(0);
+    processarp(false);
     pthread_mutex_unlock(&arptab_mutex);
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {

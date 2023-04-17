@@ -13,23 +13,23 @@ std::thread my_threads[MAX_IFACES + 1];
 int main(int argc, char **argv) {
   pid_t child_pid;
   int i;
-  bool help = 1;
+  bool help = true;
 
   progname = basename(argv[0]);
 
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-d")) {
-      debug = 1;
-      help = 0;
+      debug = true;
+      help = false;
     } else if (!strcmp(argv[i], "-p")) {
-      option_arpperm = 1;
-      help = 0;
+      option_arpperm = true;
+      help = false;
     } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       break;
     } else {
       last_iface_idx++;
       ifaces[last_iface_idx] = argv[i];
-      help = 0;
+      help = false;
     }
   }
 
