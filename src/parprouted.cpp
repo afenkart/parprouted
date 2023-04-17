@@ -22,9 +22,9 @@
 
 #include "fs.h"
 
-int debug = 0;
-int verbose = 0;
-int option_arpperm = 0;
+bool debug = 0;
+bool verbose = 0;
+bool option_arpperm = 0;
 static int perform_shutdown = 0;
 
 char *errstr;

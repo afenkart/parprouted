@@ -60,10 +60,9 @@ struct arptab_entry {
   struct arptab_entry *next = nullptr;
 };
 
-extern int debug;
-extern int verbose;
-
-extern int option_arpperm;
+extern bool debug;
+extern bool verbose;
+extern bool option_arpperm;
 
 extern arptab_entry *arptab;
 extern pthread_mutex_t arptab_mutex;
