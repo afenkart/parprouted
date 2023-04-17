@@ -67,18 +67,13 @@ arptab_entry *replace_entry(struct in_addr ipaddr, const char *dev) {
   return cur_entry;
 }
 
-int findentry(struct in_addr ipaddr) {
+bool findentry(struct in_addr ipaddr) {
   arptab_entry *cur_entry = arptab;
 
   while (cur_entry != NULL && ipaddr.s_addr != cur_entry->ipaddr_ia.s_addr) {
     cur_entry = cur_entry->next;
   };
-
-  if (cur_entry == NULL) {
-    return 0;
-  } else {
-    return 1;
-  }
+  return (cur_entry != NULL);
 }
 
 /* Remove all entires in arptab where ipaddr is NOT on interface dev */
