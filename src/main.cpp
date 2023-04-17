@@ -55,8 +55,9 @@ int main(int argc, char **argv) {
     if ((child_pid = fork()) < 0) {
       perror(progname.c_str());
       exit(1);
-    } else if (child_pid > 0)
+    } else if (child_pid > 0) {
       exit(0);
+    }
 
     /* create our own session */
     setsid();
@@ -81,8 +82,9 @@ int main(int argc, char **argv) {
 
   for (i = 0; i <= last_iface_idx; i++) {
     my_threads[++last_thread_idx] = std::thread(arp, ifaces[i]);
-    if (debug)
+    if (debug) {
       printf("Created ARP thread for %s.\n", ifaces[i]);
+    }
   }
 
   my_threads[0].join();

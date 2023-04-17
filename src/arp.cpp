@@ -55,8 +55,9 @@ int ipaddr_known(arptab_entry *list, struct in_addr addr, char *ifname) {
     list = list->next;
   }
 
-  if (debug)
+  if (debug) {
     printf("Did not find match for %s(%s)\n", inet_ntoa(addr), ifname);
+  }
 
   return 0;
 }
@@ -135,8 +136,9 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   struct sockaddr_in *sin;
 
   /* Make sure that interface is not empty */
-  if (strcmp(ifname, "") == 0)
+  if (strcmp(ifname, "") == 0) {
     return;
+  }
 
   sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 
@@ -186,15 +188,17 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
   memcpy(&arp->arp_sha, ifs.sll_addr, ETH_ALEN);
 
   memcpy(&arp->arp_tpa, &remaddr.s_addr, 4);
-  if (gratuitous)
+  if (gratuitous) {
     memcpy(&arp->arp_spa, &remaddr.s_addr, 4);
-  else
+  } else {
     memcpy(&arp->arp_spa, &ifaddr, 4);
+  }
 
   arp->arp_op = htons(ARPOP_REQUEST);
 
-  if (debug)
+  if (debug) {
     printf("Sending ARP request for %s to %s\n", inet_ntoa(remaddr), ifname);
+  }
   sendto(sock, &frame, sizeof(ether_arp_frame), 0, (struct sockaddr *)&ifs,
          sizeof(struct sockaddr_ll));
   close(sock);
@@ -203,8 +207,9 @@ void arp_req(const char *ifname, struct in_addr remaddr, int gratuitous) {
 /* ARP ping all entries in the table */
 
 void refresharp(arptab_entry *list) {
-  if (debug)
+  if (debug) {
     printf("Refreshing ARP entries.\n");
+  }
 
   while (list != NULL) {
     arp_req(list->ifname, list->ipaddr_ia, 0);
@@ -229,8 +234,9 @@ int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
   if (req_queue_len > MAX_RQ_SIZE) {
     RQ_ENTRY *temp;
 
-    if (debug)
+    if (debug) {
       printf("Request queue has grown too large, deleting last element\n");
+    }
     temp = req_queue;
     req_queue = req_queue->next;
     req_queue_len--;
@@ -240,10 +246,11 @@ int rq_add(ether_arp_frame *req_frame, struct sockaddr_ll *req_if) {
 
   /* Add entry to the list */
 
-  if (req_queue != NULL)
+  if (req_queue != NULL) {
     req_queue_tail->next = new_entry;
-  else
+  } else {
     req_queue = new_entry;
+  }
 
   req_queue_tail = new_entry;
 
@@ -277,19 +284,22 @@ void rq_process(struct in_addr ipaddr, int ifindex) {
             ((struct in_addr *)cur_entry->req_frame.arp.arp_tpa)->s_addr &&
         ifindex != cur_entry->req_if.sll_ifindex) {
 
-      if (debug)
+      if (debug) {
         printf("Found %s in request queue\n", inet_ntoa(ipaddr));
+      }
       arp_reply(&cur_entry->req_frame, &cur_entry->req_if);
 
       /* Delete entry from the linked list */
 
-      if (cur_entry == req_queue_tail)
+      if (cur_entry == req_queue_tail) {
         req_queue_tail = prev_entry;
+      }
 
-      if (prev_entry != NULL)
+      if (prev_entry != NULL) {
         prev_entry->next = cur_entry->next;
-      else
+      } else {
         req_queue = cur_entry->next;
+      }
 
       free(cur_entry);
       cur_entry = prev_entry;
@@ -363,8 +373,9 @@ void *arp(const char *ifname) {
       /* Sleep a bit in order not to overload the system */
       usleep(300);
 
-      if (arp_recv(sock, &frame) <= 0)
+      if (arp_recv(sock, &frame) <= 0) {
         continue;
+      }
       /* Insert all the replies into ARP table */
       if (frame.arp.arp_op == ntohs(ARPOP_REPLY)) {
 
@@ -384,8 +395,9 @@ void *arp(const char *ifname) {
         memcpy(&k_arpreq.arp_ha.sa_data, &frame.arp.arp_sha,
                sizeof(frame.arp.arp_sha));
         k_arpreq.arp_flags = ATF_COM;
-        if (option_arpperm)
+        if (option_arpperm) {
           k_arpreq.arp_flags = k_arpreq.arp_flags | ATF_PERM;
+        }
         strncpy(k_arpreq.arp_dev, ifname, sizeof(k_arpreq.arp_dev));
 
         k_arpreq.arp_pa.sa_family = AF_INET;
@@ -395,9 +407,10 @@ void *arp(const char *ifname) {
 
         /* Update kernel ARP table with the data from reply */
 
-        if (debug)
+        if (debug) {
           printf("Received reply: updating kernel ARP table for %s(%s).\n",
                  inet_ntoa(sin->sin_addr), ifname);
+        }
         if (ioctl(arpsock, SIOCSARP, &k_arpreq) < 0) {
           syslog(LOG_ERR, "error: ioctl SIOCSARP for %s(%s): %s",
                  inet_ntoa(sin->sin_addr), ifname, strerror(errno));
@@ -427,9 +440,10 @@ void *arp(const char *ifname) {
     dia.s_addr = dst;
     sia.s_addr = src;
 
-    if (debug)
+    if (debug) {
       printf("Received ARP request for %s on iface %s\n", inet_ntoa(dia),
              ifname);
+    }
 
     if (memcmp(&dia, &sia, sizeof(dia)) && dia.s_addr != 0) {
       pthread_mutex_lock(&arptab_mutex);
@@ -440,8 +454,9 @@ void *arp(const char *ifname) {
         }
       }
       /* Add the request to the request queue */
-      if (debug)
+      if (debug) {
         printf("Adding %s to request queue\n", inet_ntoa(sia));
+      }
       rq_add(&frame, &ifs);
       pthread_mutex_unlock(&arptab_mutex);
     }
