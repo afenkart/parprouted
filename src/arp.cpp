@@ -49,7 +49,7 @@ int ipaddr_known(arptab_entry *list, struct in_addr addr, char *ifname) {
     /* If we have this address in the table and ARP request comes from a
        different interface, then we can reply */
     if (addr.s_addr == list->ipaddr_ia.s_addr && strcmp(ifname, list->ifname) &&
-        list->incomplete == 0) {
+        !list->incomplete) {
       return 1;
     }
     list = list->next;

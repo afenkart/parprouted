@@ -217,7 +217,7 @@ void parseproc(FileSystem &fileSystem) {
   arptab_entry *entry;
   char line[ARP_LINE_LEN];
   struct in_addr ipaddr;
-  int incomplete = 0;
+  bool incomplete = false;
   int i;
   [[maybe_unused]] char *ip, *mac, *dev, *hw, *flags, *mask;
 

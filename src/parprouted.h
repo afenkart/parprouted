@@ -54,9 +54,9 @@ struct arptab_entry {
   char hwaddr[ARP_TABLE_ENTRY_LEN] = "";
   char ifname[ARP_TABLE_ENTRY_LEN] = "";
   time_t tstamp{};
-  int route_added{false};
-  int incomplete{false};
-  int want_route{false};
+  bool route_added{false};
+  bool incomplete{false};
+  bool want_route{false};
   struct arptab_entry *next = nullptr;
 };
 
