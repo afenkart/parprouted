@@ -12,7 +12,8 @@ std::thread my_threads[MAX_IFACES + 1];
 
 int main(int argc, char **argv) {
   pid_t child_pid;
-  int i, help = 1;
+  int i;
+  bool help = 1;
 
   progname = basename(argv[0]);
 

@@ -25,7 +25,8 @@
 bool debug = 0;
 bool verbose = 0;
 bool option_arpperm = 0;
-static int perform_shutdown = 0;
+
+static bool perform_shutdown = 0;
 
 char *errstr;
 
@@ -98,7 +99,7 @@ int remove_other_routes(struct in_addr ipaddr, const char *dev) {
 /* Remove route from kernel */
 int route_remove(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
-  int success = 1;
+  bool success = 1;
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route del %s/32 metric 50 dev %s scope link",
@@ -129,7 +130,7 @@ int route_remove(arptab_entry *cur_entry) {
 /* Add route into kernel */
 int route_add(arptab_entry *cur_entry) {
   char routecmd_str[ROUTE_CMD_LEN];
-  int success = 1;
+  bool success = 1;
 
   if (snprintf(routecmd_str, ROUTE_CMD_LEN - 1,
                "/sbin/ip route add %s/32 metric 50 dev %s scope link",
@@ -213,7 +214,6 @@ void processarp(int in_cleanup) {
 
 void parseproc(FileSystem &fileSystem) {
   FILE *arpf;
-  int firstline;
   arptab_entry *entry;
   char line[ARP_LINE_LEN];
   struct in_addr ipaddr;
@@ -228,7 +228,7 @@ void parseproc(FileSystem &fileSystem) {
     syslog(LOG_INFO, "Error during ARP table open: %s", errstr);
   }
 
-  firstline = 1;
+  bool firstline = 1;
 
   while (!fileSystem.feof(arpf)) {
 
