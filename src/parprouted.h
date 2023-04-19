@@ -84,6 +84,8 @@ extern int route_add(Context &, arptab_entry *);
 extern void *arp_thread(const char *ifname, FileSystem &, Context &);
 extern void refresharp(arptab_entry *list);
 extern void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous);
+struct ether_arp_frame;
+extern void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs);
 
 extern void parseproc(FileSystem &);
 extern void processarp(Context &, bool cleanup);
