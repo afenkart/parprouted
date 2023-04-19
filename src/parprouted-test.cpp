@@ -10,7 +10,7 @@ using trompeloeil::_;
 using namespace trompeloeil;
 using namespace std::string_literals;
 
-constexpr const char *TAGS = "foo";
+constexpr const char *TAGS = "routing";
 
 TEST_CASE("parprouted-test", TAGS) {
   // debug = verbose = true;
