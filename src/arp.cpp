@@ -26,10 +26,10 @@
 
 #include "parprouted.h"
 
-typedef struct _ether_arp_frame {
+struct ether_arp_frame {
   struct ether_header ether_hdr;
   struct ether_arp arp;
-} __attribute__((packed)) ether_arp_frame;
+} __attribute__((packed));
 
 typedef struct _req_struct {
   ether_arp_frame req_frame;
