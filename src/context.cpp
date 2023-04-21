@@ -19,11 +19,15 @@
 #include "context.h"
 
 #include <cstdlib>
+#include <sys/socket.h>
 
 namespace {
 
 class ContextImpl final : public Context {
   int system(const char *command) override { return ::system(command); }
+  int socket(int domain, int type, int protocol) override {
+    return ::socket(domain, type, protocol);
+  }
 };
 
 } // namespace

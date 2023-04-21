@@ -24,6 +24,7 @@
 #include <netinet/if_ether.h>
 #include <sys/ioctl.h>
 
+#include "context.h"
 #include "parprouted.h"
 
 struct ether_arp_frame {
@@ -84,12 +85,12 @@ int arp_recv(int sock, ether_arp_frame *frame) {
 
 /* Send ARP is-at reply */
 
-void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs) {
+void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs, Context &context) {
   struct ether_arp *arp = &reqframe->arp;
   unsigned char ip[4];
   int sock;
 
-  sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+  sock = context.socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 
   if (bind(sock, (struct sockaddr *)ifs, sizeof(struct sockaddr_ll)) < 0) {
     fprintf(stderr, "arp_reply() bind: %s\n", strerror(errno));
@@ -285,7 +286,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem, Cont
       if (debug) {
         printf("Found %s in request queue\n", inet_ntoa(ipaddr));
       }
-      arp_reply(&cur_entry->req_frame, &cur_entry->req_if);
+      arp_reply(&cur_entry->req_frame, &cur_entry->req_if, context);
 
       /* Delete entry from the linked list */
 

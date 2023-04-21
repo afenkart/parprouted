@@ -22,6 +22,7 @@
 
 struct Context {
   virtual int system(const char *command) = 0;
+  virtual int socket(int domain, int type, int protocol) = 0;
   virtual ~Context() = default;
 };
 
