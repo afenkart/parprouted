@@ -35,6 +35,7 @@ class ContextImpl final : public Context {
                  const struct sockaddr *dest_addr, socklen_t addrlen) override {
     return ::sendto(sockfd, buf, len, flags, dest_addr, addrlen);
   }
+  int close(int fd) override { return ::close(fd); }
 };
 
 } // namespace
