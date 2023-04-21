@@ -115,8 +115,8 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs, Context &cont
     printf("Replying to %s faking %s\n", inet_ntoa(sia), inet_ntoa(dia));
   }
 
-  sendto(sock, reqframe, sizeof(ether_arp_frame), 0, (struct sockaddr *)ifs,
-         sizeof(struct sockaddr_ll));
+  context.sendto(sock, reqframe, sizeof(ether_arp_frame), 0, (struct sockaddr *)ifs,
+                 sizeof(struct sockaddr_ll));
 
   close(sock);
 }

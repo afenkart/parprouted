@@ -31,6 +31,10 @@ class ContextImpl final : public Context {
   int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) override {
     return ::bind(sockfd, addr, addrlen);
   }
+  ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+                 const struct sockaddr *dest_addr, socklen_t addrlen) override {
+    return ::sendto(sockfd, buf, len, flags, dest_addr, addrlen);
+  }
 };
 
 } // namespace

@@ -33,6 +33,8 @@ TEST_CASE("arp-test", TAGS) {
 
     REQUIRE_CALL(context, socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP))).RETURN(11);
     REQUIRE_CALL(context, bind(11, _, sizeof(sockaddr_ll))).RETURN(0);
+    REQUIRE_CALL(context, sendto(11, _, sizeof(ether_arp_frame), 0, _, sizeof(sockaddr_ll)))
+        .RETURN(0);
     arp_reply(&frame, &ifs, context);
   }
 }
