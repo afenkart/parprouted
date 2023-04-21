@@ -28,6 +28,9 @@ class ContextImpl final : public Context {
   int socket(int domain, int type, int protocol) override {
     return ::socket(domain, type, protocol);
   }
+  int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) override {
+    return ::bind(sockfd, addr, addrlen);
+  }
 };
 
 } // namespace

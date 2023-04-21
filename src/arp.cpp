@@ -92,7 +92,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs, Context &cont
 
   sock = context.socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 
-  if (bind(sock, (struct sockaddr *)ifs, sizeof(struct sockaddr_ll)) < 0) {
+  if (context.bind(sock, (struct sockaddr *)ifs, sizeof(struct sockaddr_ll)) < 0) {
     fprintf(stderr, "arp_reply() bind: %s\n", strerror(errno));
     abort();
   }
