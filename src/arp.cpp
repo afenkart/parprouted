@@ -27,11 +27,6 @@
 #include "context.h"
 #include "parprouted.h"
 
-struct ether_arp_frame {
-  struct ether_header ether_hdr;
-  struct ether_arp arp;
-} __attribute__((packed));
-
 typedef struct _req_struct {
   ether_arp_frame req_frame;
   struct sockaddr_ll req_if;

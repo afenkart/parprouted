@@ -37,6 +37,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <netinet/if_ether.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <signal.h>
@@ -59,6 +60,11 @@ struct arptab_entry {
   bool want_route{false};
   struct arptab_entry *next = nullptr;
 };
+
+struct ether_arp_frame {
+  struct ether_header ether_hdr;
+  struct ether_arp arp;
+} __attribute__((packed));
 
 extern bool debug;
 extern bool verbose;
