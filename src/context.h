@@ -24,6 +24,18 @@ struct Context {
   virtual int system(const char *command) = 0;
   virtual int socket(int domain, int type, int protocol) = 0;
   virtual int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = 0;
+
+  virtual int ioctl3(int fd, unsigned long request, void *arg) = 0;
+
+  template <typename... Args> int ioctl(int fd, unsigned long request, Args... args) {
+    switch (sizeof...(Args)) {
+    case 1:
+      return (ioctl3(fd, request, args), ...);
+    default:
+      std::abort();
+    }
+  }
+
   virtual ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
                          const struct sockaddr *dest_addr, socklen_t addrlen) = 0;
 

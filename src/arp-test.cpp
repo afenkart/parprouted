@@ -8,6 +8,8 @@
 #include <trompeloeil.hpp>
 
 #include <linux/if_packet.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 namespace {
 
@@ -91,6 +93,12 @@ TEST_CASE("arp-test", TAGS) {
 
   SECTION("arp_req") {
     REQUIRE_CALL(context, socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP))).RETURN(7);
+    REQUIRE_CALL(context, ioctl3(7, SIOCGIFHWADDR, _))
+        .LR_SIDE_EFFECT(
+            auto hwaddr = std::experimental::make_array<char>(0x11, 0x12, 0x13, 0x14, 0x15, 0x16);
+            memcpy(static_cast<ifreq *>(_3)->ifr_hwaddr.sa_data, hwaddr.data(), hwaddr.size()))
+        .RETURN(0);
+
     arp_req("eth0", in_addr{htonl(0x01020304)}, false, context);
   }
 }

@@ -19,6 +19,7 @@
 #include "context.h"
 
 #include <cstdlib>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 
 namespace {
@@ -36,6 +37,10 @@ class ContextImpl final : public Context {
     return ::sendto(sockfd, buf, len, flags, dest_addr, addrlen);
   }
   int close(int fd) override { return ::close(fd); }
+
+  int ioctl3(int fd, unsigned long request, void *arg) override {
+    return ::ioctl(fd, request, arg);
+  }
 };
 
 } // namespace

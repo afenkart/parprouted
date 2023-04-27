@@ -142,7 +142,7 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Contex
   /* Get the hwaddr and ifindex of the interface */
   memset(ifr.ifr_name, 0, IFNAMSIZ);
   strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
-  if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
+  if (context.ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
     syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFHWADDR for %s: %s\n", ifname,
            strerror(errno));
     abort();
