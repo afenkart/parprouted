@@ -123,7 +123,7 @@ void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs, Context &cont
 
 /* Send ARP who-has request */
 
-void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous) {
+void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Context &context) {
   ether_arp_frame frame;
   struct ether_arp *arp = &frame.arp;
   int sock;
@@ -137,7 +137,7 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous) {
     return;
   }
 
-  sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+  sock = context.socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 
   /* Get the hwaddr and ifindex of the interface */
   memset(ifr.ifr_name, 0, IFNAMSIZ);
@@ -201,13 +201,13 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous) {
 
 /* ARP ping all entries in the table */
 
-void refresharp(arptab_entry *list) {
+void refresharp(arptab_entry *list, Context &context) {
   if (debug) {
     printf("Refreshing ARP entries.\n");
   }
 
   while (list != NULL) {
-    arp_req(list->ifname, list->ipaddr_ia, false);
+    arp_req(list->ifname, list->ipaddr_ia, false, context);
     list = list->next;
   }
 }
@@ -264,7 +264,7 @@ void rq_process(struct in_addr ipaddr, int ifindex, FileSystem &fileSystem, Cont
   RQ_ENTRY *prev_entry = NULL;
 
   pthread_mutex_lock(&arptab_mutex);
-  parseproc(fileSystem);
+  parseproc(fileSystem, context);
   processarp(context, false);
   pthread_mutex_unlock(&arptab_mutex);
 
@@ -413,7 +413,7 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem, Context &context) {
          * update their ARP tables quickly */
         for (i = 0; i <= last_iface_idx; i++) {
           if (strcmp(ifaces[i], ifname)) {
-            arp_req(ifaces[i], sin->sin_addr, true);
+            arp_req(ifaces[i], sin->sin_addr, true, context);
           }
         }
       }
@@ -433,7 +433,7 @@ void *arp_thread(const char *ifname, FileSystem &fileSystem, Context &context) {
       /* Relay the ARP request to all other interfaces */
       for (i = 0; i <= last_iface_idx; i++) {
         if (strcmp(ifaces[i], ifname)) {
-          arp_req(ifaces[i], dia, false);
+          arp_req(ifaces[i], dia, false, context);
         }
       }
       /* Add the request to the request queue */

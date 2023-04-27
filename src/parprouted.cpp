@@ -205,7 +205,7 @@ void processarp(Context &context, bool in_cleanup) {
   } /* while loop */
 }
 
-void parseproc(FileSystem &fileSystem) {
+void parseproc(FileSystem &fileSystem, Context &context) {
   FILE *arpf;
   arptab_entry *entry;
   char line[ARP_LINE_LEN];
@@ -267,7 +267,7 @@ void parseproc(FileSystem &fileSystem) {
           printf("incomplete entry %s found, request on all interfaces\n", inet_ntoa(ipaddr));
         }
         for (i = 0; i <= last_iface_idx; i++) {
-          arp_req(ifaces[i], ipaddr, false);
+          arp_req(ifaces[i], ipaddr, false, context);
         }
       }
 
@@ -388,13 +388,13 @@ void *main_thread(FileSystem &fileSystem, Context &context) {
     }
     pthread_testcancel();
     pthread_mutex_lock(&arptab_mutex);
-    parseproc(fileSystem);
+    parseproc(fileSystem, context);
     processarp(context, false);
     pthread_mutex_unlock(&arptab_mutex);
     usleep(SLEEPTIME);
     if (!option_arpperm && time(NULL) - last_refresh > REFRESHTIME) {
       pthread_mutex_lock(&arptab_mutex);
-      refresharp(arptab);
+      refresharp(arptab, context);
       pthread_mutex_unlock(&arptab_mutex);
       time(&last_refresh);
     }

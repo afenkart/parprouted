@@ -261,7 +261,7 @@ TEST_CASE("parprouted-test", TAGS) {
         .IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, feof(_)).RETURN(true).IN_SEQUENCE(seq);
     REQUIRE_CALL(fileSystem, fclose(_)).RETURN(0);
-    parseproc(fileSystem);
+    parseproc(fileSystem, context);
   }
 }
 

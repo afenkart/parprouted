@@ -88,6 +88,11 @@ TEST_CASE("arp-test", TAGS) {
             std::experimental::make_array<uint8_t>(0x14, 0x13, 0x12, 0x11));
     }
   }
+
+  SECTION("arp_req") {
+    REQUIRE_CALL(context, socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP))).RETURN(7);
+    arp_req("eth0", in_addr{htonl(0x01020304)}, false, context);
+  }
 }
 
 } // namespace

@@ -88,12 +88,12 @@ extern int route_remove(Context &, arptab_entry *);
 extern int route_add(Context &, arptab_entry *);
 
 extern void *arp_thread(const char *ifname, FileSystem &, Context &);
-extern void refresharp(arptab_entry *list);
-extern void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous);
+extern void refresharp(arptab_entry *list, Context &);
+extern void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Context &);
 struct ether_arp_frame;
 extern void arp_reply(ether_arp_frame *reqframe, struct sockaddr_ll *ifs, Context &);
 
-extern void parseproc(FileSystem &);
+extern void parseproc(FileSystem &, Context &);
 extern void processarp(Context &, bool cleanup);
 
 extern void sighandler(int);
