@@ -98,6 +98,18 @@ TEST_CASE("arp-test", TAGS) {
             auto hwaddr = std::experimental::make_array<char>(0x11, 0x12, 0x13, 0x14, 0x15, 0x16);
             memcpy(static_cast<ifreq *>(_3)->ifr_hwaddr.sa_data, hwaddr.data(), hwaddr.size()))
         .RETURN(0);
+    REQUIRE_CALL(context, ioctl3(7, SIOCGIFINDEX, _))
+        .LR_SIDE_EFFECT(static_cast<ifreq *>(_3)->ifr_ifindex = 2)
+        .RETURN(0);
+    REQUIRE_CALL(context, ioctl3(7, SIOCGIFADDR, _))
+        .LR_SIDE_EFFECT(struct sockaddr_in ip{
+            .sin_family = 0, .sin_port = 0, .sin_addr = htonl(0x01020304), .sin_zero{0x0}};
+                        memcpy(&static_cast<ifreq *>(_3)->ifr_addr, &ip, sizeof(ip)))
+        .RETURN(0);
+
+    REQUIRE_CALL(context, sendto(7, _, sizeof(ether_arp_frame), 0, _, sizeof(sockaddr_ll)))
+        .RETURN(0);
+    REQUIRE_CALL(context, close(7)).RETURN(0);
 
     arp_req("eth0", in_addr{htonl(0x01020304)}, false, context);
   }

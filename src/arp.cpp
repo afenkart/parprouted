@@ -151,7 +151,7 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Contex
   memset(ifs.sll_addr, 0, ETH_ALEN);
   memcpy(ifs.sll_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
 
-  if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0) {
+  if (context.ioctl(sock, SIOCGIFINDEX, &ifr) < 0) {
     syslog(LOG_ERR, "error in arp_req(): ioctl SIOCGIFINDEX for %s: %s", ifname, strerror(errno));
     return;
   }
@@ -163,7 +163,7 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Contex
   ifs.sll_pkttype = PACKET_BROADCAST;
   ifs.sll_halen = ETH_ALEN;
 
-  if (ioctl(sock, SIOCGIFADDR, &ifr) == 0) {
+  if (context.ioctl(sock, SIOCGIFADDR, &ifr) == 0) {
     sin = (struct sockaddr_in *)&ifr.ifr_addr;
     ifaddr = sin->sin_addr.s_addr;
   } else {
@@ -194,9 +194,9 @@ void arp_req(const char *ifname, struct in_addr remaddr, bool gratuitous, Contex
   if (debug) {
     printf("Sending ARP request for %s to %s\n", inet_ntoa(remaddr), ifname);
   }
-  sendto(sock, &frame, sizeof(ether_arp_frame), 0, (struct sockaddr *)&ifs,
-         sizeof(struct sockaddr_ll));
-  close(sock);
+  context.sendto(sock, &frame, sizeof(ether_arp_frame), 0, (struct sockaddr *)&ifs,
+                 sizeof(struct sockaddr_ll));
+  context.close(sock);
 }
 
 /* ARP ping all entries in the table */
