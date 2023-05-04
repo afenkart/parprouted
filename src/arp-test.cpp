@@ -19,6 +19,17 @@ using namespace std::string_literals;
 
 constexpr const char *TAGS = "arp";
 
+template <typename T, size_t Nm, size_t... Idx>
+constexpr std::array<T, sizeof...(Idx)> makeSubArrayImpl(T (&buf)[Nm],
+                                                         std::index_sequence<Idx...>) {
+  return {{buf[Idx]...}};
+}
+
+template <size_t firstN, typename T, size_t Nm>
+constexpr std::array<T, firstN> makeSubArray(T (&buf)[Nm]) {
+  return makeSubArrayImpl(buf, std::make_index_sequence<firstN>{});
+}
+
 template <typename T, size_t... Idx>
 std::string hexdumpImpl(T buf[sizeof(Idx)], std::index_sequence<Idx...>) {
   std::stringstream out;
@@ -119,6 +130,16 @@ TEST_CASE("arp-test", TAGS) {
     arp_req("eth0", in_addr{htonl(0x01020304)}, false, context);
 
     THEN("arp packet is created") {
+
+      CHECK(makeSubArray<6>(ifs.sll_addr) ==
+            std::experimental::make_array<uint8_t>(0x11, 0x12, 0x13, 0x14, 0x15, 0x16));
+      CHECK(ifs.sll_family == AF_PACKET);
+      CHECK(ifs.sll_protocol == htons(ETH_P_ARP));
+      CHECK(ifs.sll_ifindex == 2); // see ioctl(SIOCGIFINDEX) above
+      CHECK(ifs.sll_hatype == ARPHRD_ETHER);
+      CHECK(ifs.sll_pkttype == PACKET_BROADCAST);
+      CHECK(ifs.sll_halen == ETH_ALEN);
+
       ether_header etherHeader = packet.ether_hdr;
       CHECK(std::to_array(etherHeader.ether_dhost) ==
             std::experimental::make_array<uint8_t>(0xff, 0xff, 0xff, 0xff, 0xff, 0xff));
