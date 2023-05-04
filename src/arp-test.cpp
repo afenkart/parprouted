@@ -91,7 +91,7 @@ TEST_CASE("arp-test", TAGS) {
     }
   }
 
-  SECTION("arp_req") {
+  SECTION("arp_req for ip 1.2.3.4") {
     REQUIRE_CALL(context, socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP))).RETURN(7);
     REQUIRE_CALL(context, ioctl3(7, SIOCGIFHWADDR, _))
         .LR_SIDE_EFFECT(
@@ -103,15 +103,46 @@ TEST_CASE("arp-test", TAGS) {
         .RETURN(0);
     REQUIRE_CALL(context, ioctl3(7, SIOCGIFADDR, _))
         .LR_SIDE_EFFECT(struct sockaddr_in ip{
-            .sin_family = 0, .sin_port = 0, .sin_addr = htonl(0x01020304), .sin_zero{0x0}};
+            .sin_family = 0, .sin_port = 0, .sin_addr = htonl(0x11121314), .sin_zero{0x0}};
                         memcpy(&static_cast<ifreq *>(_3)->ifr_addr, &ip, sizeof(ip)))
         .RETURN(0);
 
+    ether_arp_frame packet{};
+    sockaddr_ll ifs{};
+
     REQUIRE_CALL(context, sendto(7, _, sizeof(ether_arp_frame), 0, _, sizeof(sockaddr_ll)))
+        .LR_SIDE_EFFECT(packet = *static_cast<const ether_arp_frame *>(_2))
+        .LR_SIDE_EFFECT(ifs = *reinterpret_cast<const sockaddr_ll *>(_5))
         .RETURN(0);
     REQUIRE_CALL(context, close(7)).RETURN(0);
 
     arp_req("eth0", in_addr{htonl(0x01020304)}, false, context);
+
+    THEN("arp packet is created") {
+      ether_header etherHeader = packet.ether_hdr;
+      CHECK(std::to_array(etherHeader.ether_dhost) ==
+            std::experimental::make_array<uint8_t>(0xff, 0xff, 0xff, 0xff, 0xff, 0xff));
+      CHECK(std::to_array(etherHeader.ether_shost) ==
+            std::experimental::make_array<uint8_t>(0x11, 0x12, 0x13, 0x14, 0x15, 0x16));
+      CHECK(etherHeader.ether_type == htons(ETHERTYPE_ARP));
+
+      ether_arp arpFrame = packet.arp;
+      CHECK(arpFrame.arp_hrd == htons(ARPHRD_ETHER));
+      CHECK(arpFrame.arp_pro == htons(ETH_P_IP));
+      CHECK(arpFrame.arp_hln == ETH_ALEN);
+      CHECK(arpFrame.arp_pln == 4);
+
+      CHECK(std::to_array(arpFrame.arp_tha) == std::array<uint8_t, ETH_ALEN>());
+      CHECK(std::to_array(arpFrame.arp_sha) ==
+            std::experimental::make_array<uint8_t>(0x11, 0x12, 0x13, 0x14, 0x15, 0x16));
+
+      // TODO gratuitous
+      CHECK(std::to_array(arpFrame.arp_tpa) ==
+            std::experimental::make_array<uint8_t>(0x01, 0x02, 0x03, 0x04));
+      CHECK(std::to_array(arpFrame.arp_spa) ==
+            std::experimental::make_array<uint8_t>(0x11, 0x12, 0x13, 0x14));
+      CHECK(arpFrame.arp_op == htons(ARPOP_REQUEST));
+    }
   }
 }
 
