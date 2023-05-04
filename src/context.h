@@ -18,7 +18,9 @@
 
 #pragma once
 
+#include <cstdlib>
 #include <memory>
+#include <sys/socket.h>
 
 struct Context {
   virtual int system(const char *command) = 0;
